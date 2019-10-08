@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Main Chat page
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container">
+    <meta id="my-data" data-name="{{chat_name}}">
+    <div class="row">
+        <div class="col-2">
+                <a href="{{ '/chat'|urlencode }}">
+                    <div>
+                        <button type="button" class="btn btn-outline-success btn-sm btn-block">Тусэ_web</button>
+                    </div>
+                </a>
+            {% for user in users %}
+                <div>
+                <a href="{{ '/chat?id=%s'%user._id|urlencode }}">
+
+                    {% if user.login not in online %}
+                        <button type="button" class="btn btn-outline-secondary btn-sm btn-block" id="user_{{user.login}}">{{user.login}}</button>
+                    {% else %}
+                        <button type="button" class="btn btn-success btn-sm btn-block" id="user_{{user.login}}">{{user.login}}</button>
+                    {% endif %}
+                </a>
+                </div>
+            {% endfor %}
+        </div>    
+        <div class="col-8">
+            <div id='subscribe'>
+                {% for mes in messages %}
+                  <p>[{{ mes['time'].strftime('%H:%M:%S') }}] <span class="user">{{ mes['user'] }}</span>: {{ mes['msg'] }}</p>
+                {% endfor %}
+            </div>
+                <p>
+                    <div class="mb-3">
+                        <label for="validationTextarea">Сообщение</label>
+                        <textarea type="text" class="form-control" id="message" placeholder="Required example textarea" required></textarea>
+                    </div>
+                    <input class="btn btn-primary" type="submit" id='submit' value="Send">
+                    <input class="btn btn-default" type="button", id="signout", value="Sign Out">
+                </p>
+        </div>    
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+    <script src="{{ static('js/main.js') }}"></script>
+{% endblock %}
