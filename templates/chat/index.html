@@ -8,8 +8,9 @@ Main Chat page
     <link href="{{ static('css/chat.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-<div class="container">
-    <meta id="my-data" data-name="{{chat_name}}">
+<div class="container" id='messages_box'>
+    <meta id="my-data" data-name="{{chat_name}}" data-login="{{to_user}}">
+    <div class="row">{{login}}</div>
     <div class="row">
         <div class="col-2">
                 <a href="{{ '/chat'|urlencode }}">
@@ -20,11 +21,10 @@ Main Chat page
             {% for user in users %}
                 <div>
                 <a href="{{ '/chat?id=%s'%user._id|urlencode }}">
-
                     {% if user.login not in online %}
                         <button type="button" class="btn btn-outline-secondary btn-sm btn-block" id="user_{{user.login}}">{{user.login}}</button>
                     {% else %}
-                        <button type="button" class="btn btn-success btn-sm btn-block" id="user_{{user.login}}">{{user.login}}</button>
+                        <button type="button" class="btn btn-success btn-sm btn-block" id="user_{{user.login}}" value="{{unread_mess[user.login]}}">{{user.login}}</button>
                     {% endif %}
                 </a>
                 </div>
@@ -33,7 +33,9 @@ Main Chat page
         <div class="col-8">
             <div id='subscribe'>
                 {% for mes in messages %}
-                  <p>[{{ mes['time'].strftime('%H:%M:%S') }}] <span class="user">{{ mes['user'] }}</span>: {{ mes['msg'] }}</p>
+                  <p {% if mes._id in unread_mess %}class="unread"{% endif %}>[{{ mes['time'].strftime('%H:%M:%S') }}] 
+                    <span class="user">{{ mes['from_user'] }}</span>: {{ mes['msg'] }}
+                  </p>
                 {% endfor %}
             </div>
                 <p>

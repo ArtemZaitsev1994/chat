@@ -1,5 +1,11 @@
 $(document).ready(function(){
     var sock = {};
+
+    var chat_name = $('#my-data').data().name
+    
+    var counter = new Proxy({}, {
+      get: (target, name) => name in target ? target[name] : 0
+    })
     try{
         sock = new WebSocket('ws://' + window.location.host + '/ws?chat_name=' + $('#my-data').data().name);
     }
@@ -19,32 +25,59 @@ $(document).ready(function(){
             var messageObj = JSON.parse(message);
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.user}</span>: ${messageObj.msg}\n`;
-                messageElem.append($('<p>').html(htmlText));
+                messageElem.append($('<p class="unread">').html(htmlText));
             } else if(messageObj.type == 'joined'){
                 $(`#user_${messageObj.user}`).removeClass('btn-outline-secondary').addClass('btn-success')
+                if (chat_name == messageObj.chat_name){
+                    $('.unread').removeClass('unread')
+                }
             } else if(messageObj.type == 'left'){
                 $(`#user_${messageObj.user}`).removeClass('btn-success').addClass('btn-outline-secondary')
+            } else if(messageObj.type == 'unread'){
+                $(`#user_${messageObj.user}`).removeClass('btn-success').addClass('btn-info')
+
+                c = ++counter[$(`#user_${messageObj.user}`).val()]
+                $(`#user_${messageObj.user}`).text(`${messageObj.user} (${c})`)
             }
         } catch (e){
             htmlText = htmlText + message;
             messageElem.append($('<p>').html(htmlText));
         }
 
-        messageElem.find('p').each(function(i, value){
-            height += parseInt($(this).height());
-        });
-        messageElem.animate({scrollTop: height});
+        // messageElem.find('p').each(function(i, value){
+        //     height += parseInt($(this).height());
+        // });
+        // messageElem.animate({scrollTop: height});
     }
 
     function sendMessage(){
         var msg = $('#message');
-        let chat_name = $('#my-data').data().name
-        sock.send(JSON.stringify({'msg': msg.val(), 'chat_name': chat_name}));
+        let to_user = $('#my-data').data().login
+        sock.send(JSON.stringify({
+            'msg': msg.val(),
+            'chat_name': chat_name,
+            'to_user': to_user
+        }));
         msg.val('').focus();
+    }
+
+    function updateUnread(){
+        console.log(1)
+        setTimeout(function(){
+
+            sock.send(JSON.stringify({
+                'update': true,
+                'chat_name': chat_name,
+                'to_user': $('#my-data').data().login
+            }));
+        }, 2000)
     }
 
     sock.onopen = function(){
         console.log('Connection to server started');
+        $("#messages_box").hover(() =>{
+            updateUnread()
+        })
     };
 
     // send message from form
@@ -78,4 +111,6 @@ $(document).ready(function(){
     sock.onerror = function(error){
         showMessage(error);
     };
+
+
 });

@@ -15,9 +15,13 @@ class User():
     async def check_user(self, **kw):
         return await self.collection.find_one({'login': self.login})
 
-    async def get_login(self, **kw):
-        user = await self.collection.find_one({'_id': ObjectId(self.id)})
-        return user.get('login')
+    async def get_login(self, user_id, **kw):
+        result =  await self.collection.find_one({'_id': ObjectId(user_id)})
+        return result['login']
+
+    # async def get_login(self, **kw):
+    #     user = await self.collection.find_one({'_id': ObjectId(self.id)})
+    #     return user.get('login')
 
     async def get_all_users(self, **kw):
         users = await self.collection.find().to_list(length=100)

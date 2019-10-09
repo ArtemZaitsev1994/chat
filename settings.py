@@ -24,3 +24,4 @@ MONGO_DB_NAME = env.str('MONGO_DB_NAME')
 
 MESSAGE_COLLECTION = 'messages'
 USER_COLLECTION = 'users'
+UNREAD_COLLECTION = 'unread_message'
