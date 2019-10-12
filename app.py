@@ -39,6 +39,5 @@ app.on_cleanup.append(on_shutdown)
 app['websockets'] = collections.defaultdict(list)
 app['online'] = {}
 
-if __name__ == '__main__':
-    print(1)
-    web.run_app(app, port=os.getenv('PORT', 8000))
+print(1)
+web.run_app(app, port=os.getenv('PORT', 8000))
