@@ -1,6 +1,7 @@
+import logging
+import os
 from os.path import isfile
 from envparse import env
-import logging
 
 log = logging.getLogger('app')
 log.setLevel(logging.DEBUG)
