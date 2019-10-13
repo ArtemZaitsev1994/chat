@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}
+ТусЭ about
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container" id='messages_box'>
+    <meta id="my-data" >
+    <br>
+    <div class="row">
+        <div class="col-2">
+                <a href="{{ '/chat'|urlencode }}">
+                    <div>
+                        <button type="button" class="btn btn-outline-success btn-sm btn-block">Тусэ_web</button>
+                    </div>
+                </a>
+            {% for user in users %}
+                <div>
+                <a href="{{ '/chat?id=%s'%user._id|urlencode }}">
+                        <button 
+                            type="button" 
+                            class="btn btn-{% if user.login not in online %}secondary{% elif unread_counter[user._id] > 0 %}info{% else %}success{% endif %} btn-sm btn-block btn_chat" 
+                            id="user_{{user.login}}" 
+                            value="{{unread_counter[user._id]}}">
+                                {{user.login}} {% if unread_counter[user._id] > 0 %}({{unread_counter[user._id]}}){% endif %} 
+                        </button>
+                </a>
+                </div>
+            {% endfor %}
+        </div>    
+        <div class="col-8">
+            <form autocomplete="on">
+                <div id="error" style="color: red;"></div>
+                <div id="success" style="color: green;"></div>
+                <div class="form-group">
+                    <div id="login_label">Ваш логин: {{user.login}}</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Чтобы изменить введите новый логин" id="login">
+                </div>
+                <hr>
+
+                <div class="form-group">
+                    <div id="name_label">Имя: {% if user.name %}{{user.name}}{% else %}Не указано{% endif %}</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if user.name %}Чтобы изменить введите новое имя{% else %}Введите свое имя{% endif %}" id="name">
+                </div>
+                <hr>
+
+                <div class="form-group">
+                    <div id="sername_label">Фамилия: {% if user.sername %}{{user.sername}}{% else %}Не указано{% endif %}</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if user.sername %}Чтобы изменить введите новую фамилию{% else %}Введите свою фамилию{% endif %}" id="sername">
+                </div>
+                <hr>
+
+                <div class="form-group">
+                    <div id="email_label">E-mail: {% if user.email %}{{user.email}}{% else %}Не указано{% endif %}</div>
+                        <input type="email" class="form-control" placeholder="{% if user.email %}Чтобы изменить введите новый e-mail{% else %}Введите свой e-mail{% endif %}" id="email">
+                </div>
+                <hr>
+
+                <div class="form-group">
+                    <div id="bday_label">День рождения: {% if user.bday %}{{user.bday}}{% else %}Не указано{% endif %}</div>
+                        <input type="date" class="form-control" id="bday">
+                </div>
+                <hr>
+
+                <div class="form-group">
+                    <label>Сменить пароль
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password">
+                    </label>
+                </div>
+                <hr>
+                <div class="form-group">
+                    <label>Подтвердить пароль
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password">
+                    </label>
+                </div>
+                <p>
+                    <input class="btn btn-primary" id="submit" title="Сохранить" type="button" value="Сохранить">
+                </p>
+                {{user}}
+            </form>
+        </div>    
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+    <script src="{{ static('js/account.js') }}"></script>
+{% endblock %}

@@ -1,4 +1,5 @@
 import json
+import collections
 from time import time
 from bson.objectid import ObjectId
 
@@ -6,6 +7,7 @@ import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
 from auth.models import User
+from chat.models import UnreadMessage
 
 
 def redirect(request, router_name):
@@ -70,3 +72,41 @@ class SignOut(web.View):
             redirect(self.request, 'login')
         else:
             raise web.HTTPForbidden(body=b'Forbidden')
+
+
+class AccountDetails(web.View):
+
+    @aiohttp_jinja2.template('auth/account.html')
+    async def get(self, **kw):
+        user = User(self.request.app.db, {})
+
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = await user.get_login(self_id)
+        user.login = login
+        account = await user.check_user()
+        users = await user.get_all_users()
+
+        unread = UnreadMessage(self.request.app.db)
+        r_unread = await unread.get_messages_recieved(self_id)
+        unread_counter = collections.Counter()
+        for mes in r_unread:
+            unread_counter[mes['from_user']] += 1
+
+        context = {
+            'users': users,
+            'user': account,
+            'unread_counter': unread_counter, 
+        }
+        return context
+
+    async def post(self, **kw):
+        user = User(self.request.app.db, {})
+
+        data = await self.request.json()
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = await user.get_login(self_id)
+        
+        await user.update_user(self_id, data)
+        return web.json_response({})

@@ -2,9 +2,19 @@ $(document).ready(function(){
     var sock = {};
 
     var chat_name = $('#my-data').data().name
+    var to_user = $('#my-data').data().to_user
+    var to_user_login = $('#my-data').data().to_user_login
+    var own_login = $('#my-data').data().own_login
+    var self_id = $('#my-data').data().self_id
+    var online_id = $('#my-data').data().online_id
     
+
     var counter = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
+    })
+
+    $('.btn_chat').each(function(){
+        counter[this.id] = this.value
     })
     try{
         sock = new WebSocket('ws://' + window.location.host + '/ws?chat_name=' + $('#my-data').data().name);
@@ -24,53 +34,69 @@ $(document).ready(function(){
         try{
             var messageObj = JSON.parse(message);
             if (messageObj.type == 'msg'){
-                htmlText = `${htmlText}<span class="user">${messageObj.user}</span>: ${messageObj.msg}\n`;
+                htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
                 messageElem.append($('<p class="unread">').html(htmlText));
-            } else if(messageObj.type == 'joined'){
-                $(`#user_${messageObj.user}`).removeClass('btn-outline-secondary').addClass('btn-success')
-                if (chat_name == messageObj.chat_name){
-                    $('.unread').removeClass('unread')
+                
+                if (messageObj.to_user == self_id){
+                    c = ++counter[`user_${messageObj.from}`]
+                    $(`#user_${messageObj.from}`).val(c)
+                    $(`#user_${messageObj.from}`).removeClass('btn-success').addClass('btn-info')
+                    $(`#user_${messageObj.from}`).text(`${messageObj.from} (${c})`)
                 }
-            } else if(messageObj.type == 'left'){
-                $(`#user_${messageObj.user}`).removeClass('btn-success').addClass('btn-outline-secondary')
-            } else if(messageObj.type == 'unread'){
-                $(`#user_${messageObj.user}`).removeClass('btn-success').addClass('btn-info')
 
-                c = ++counter[$(`#user_${messageObj.user}`).val()]
-                $(`#user_${messageObj.user}`).text(`${messageObj.user} (${c})`)
+            } else if(messageObj.type == 'joined'){
+                $(`#user_${messageObj.user}`).removeClass('btn-secondary').addClass('btn-success')
+
+            } else if(messageObj.type == 'left'){
+                $(`#user_${messageObj.user}`).removeClass('btn-success').addClass('btn-secondary')
+
+            } else if(messageObj.type == 'read'){
+                $('.unread').removeClass('unread')
             }
         } catch (e){
+            console.log(e)
             htmlText = htmlText + message;
             messageElem.append($('<p>').html(htmlText));
         }
-
-        // messageElem.find('p').each(function(i, value){
-        //     height += parseInt($(this).height());
-        // });
-        // messageElem.animate({scrollTop: height});
     }
 
     function sendMessage(){
         var msg = $('#message');
-        let to_user = $('#my-data').data().login
         sock.send(JSON.stringify({
             'msg': msg.val(),
             'chat_name': chat_name,
-            'to_user': to_user
+            'to_user': to_user,
+            'to_user_login': to_user_login,
         }));
         msg.val('').focus();
     }
 
     function updateUnread(){
-        console.log(1)
-        setTimeout(function(){
-
-            sock.send(JSON.stringify({
-                'update': true,
+        if (counter[`user_${to_user_login}`] > 0){
+            data = {
+                'login': own_login,
+                'self_id': self_id,
                 'chat_name': chat_name,
-                'to_user': $('#my-data').data().login
-            }));
-        }, 2000)
+                'to_user': to_user,
+            }
+            setTimeout(function(){
+                $.ajax({
+                    dataType: 'json',
+                    url: 'http://0.0.0.0:8080/update',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    success: function(data) {
+                        if (data){
+                            $(`#user_${to_user_login}`).removeClass('btn-info').addClass('btn-success')
+                        } else {
+                            $(`#user_${to_user_login}`).removeClass('btn-info').addClass('btn-secondary')
+                        }
+                        $(`#user_${to_user_login}`).text(to_user_login)
+                        counter[`user_${to_user_login}`] = 0
+                    }
+                });
+            }, 200)
+        }
     }
 
     sock.onopen = function(){

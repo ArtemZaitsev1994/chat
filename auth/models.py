@@ -25,6 +25,8 @@ class User():
 
     async def get_all_users(self, **kw):
         users = await self.collection.find().to_list(length=100)
+        for u in users:
+            u['_id'] = str(u['_id'])
         return users
 
     async def create_user(self, **kw):
@@ -33,4 +35,11 @@ class User():
             result = await self.collection.insert({'email': self.email, 'login': self.login, 'password': self.password})
         else:
             result = 'User exists'
+        return result
+
+    async def update_user(self, _id, data):
+        result = await self.collection.replace_one(
+            {'_id': ObjectId(_id) },
+            data
+        )
         return result

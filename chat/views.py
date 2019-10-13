@@ -41,6 +41,7 @@ class ChatList(web.View):
 
         session = await get_session(self.request)
         self_id = session.get('user')
+        login = await user.get_login(self_id)
         to_user = self.request.rel_url.query.get('id')
         if to_user is not None and to_user != '':
             to_user_login = await user.get_login(to_user)
@@ -65,6 +66,8 @@ class ChatList(web.View):
         # await unread.clear_db()
         # await message.clear_db()
         context = {
+            'self_id': self_id,
+            'own_login': login,
             'messages': messages,
             'users': users,
             'online': online_id,
@@ -72,16 +75,27 @@ class ChatList(web.View):
             'to_user': to_user,
             'unread_mess': s_unread,
             'unread_counter': count_r_unr,
-            'login': to_user_login,
+            'to_user_login': to_user_login,
         }
         # print(context)
         return context
 
+
 async def update_unread(request):
-    print(request)
-    print(dir(request))
-    print(request.POST)
-    return True
+    data = await request.json()
+    login, to_user = data['login'], data['to_user']
+    self_id, chat_name = data['self_id'], data['chat_name']
+    unread = UnreadMessage(request.app.db)
+    await unread.delete(user_id=self_id, chat_name=chat_name)
+    for _ws in request.app['websockets'][chat_name]:
+        await _ws.send_json({
+            'user_id': self_id,
+            'user': login,
+            'type': 'read',
+            'chat_name': chat_name
+        })
+    is_online = request.app['online'].get(to_user)
+    return web.json_response(bool(is_online))
 
 
 class WebSocket(web.View):
@@ -103,7 +117,12 @@ class WebSocket(web.View):
         self.request.app['websockets'][chat_name].append(ws)
         self.request.app['online'][session.get('user')] = (login, ws)
         for _ws in self.request.app['online'].values():
-            await _ws[1].send_json({'user': login, 'type': 'joined', 'chat_name': chat_name})
+            await _ws[1].send_json({
+                'user_id': self_id,
+                'user': login,
+                'type': 'joined',
+                'chat_name': chat_name
+            })
 
         async for msg in ws:
             if msg.type == WSMsgType.TEXT:
@@ -111,10 +130,6 @@ class WebSocket(web.View):
                 if msg.data == 'close':
                     await ws.close()
 
-                elif data.get('update'):
-                    await unread.delete(user_id=self_id, chat_name=chat_name)
-                    for _ws in self.request.app['websockets'][chat_name]:
-                        await _ws.send_json({'user': login, 'type': 'joined', 'chat_name': chat_name})
                 else:
                     result = await message.save(
                         from_user=login,
@@ -129,16 +144,23 @@ class WebSocket(web.View):
                         chat_name=data['chat_name']
                     )
                     for _ws in self.request.app['websockets'][chat_name]:
-                        await _ws.send_json({'user': login, 'msg': data['msg'], 'type': 'msg'})
-
-                    if data['to_user'] != '' and \
-                            data['to_user'] is not None and \
-                            data['to_user'] in self.request.app['online']:
-                        await self.request.app['online'][data['to_user']][1].send_json({
-                            'user': login,
+                        await _ws.send_json({
+                            'from': login,
+                            'to_user': data['to_user'],
                             'msg': data['msg'],
-                            'type': 'unread'
+                            'chat_name': data['chat_name'],
+                            'to_user_login': data['to_user_login'],
+                            'type': 'msg',
                         })
+
+                    # if data['to_user'] != '' and \
+                    #         data['to_user'] is not None and \
+                    #         data['to_user'] in self.request.app['online']:
+                    #     await self.request.app['online'][data['to_user']][1].send_json({
+                    #         'user': login,
+                    #         'msg': data['msg'],
+                    #         'type': 'unread'
+                    #     })
             elif msg.type == WSMsgType.ERROR:
                 log.debug('ws connection closed with exception %s' % ws.exception())
 
