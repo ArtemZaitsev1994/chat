@@ -3,6 +3,7 @@ import aiohttp_jinja2
 import jinja2
 import hashlib
 import collections
+import os
 from aiohttp_session import session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from aiohttp import web
@@ -38,4 +39,5 @@ app.on_cleanup.append(on_shutdown)
 app['websockets'] = collections.defaultdict(list)
 app['online'] = {}
 
-web.run_app(app)
+print(1)
+web.run_app(app, port=os.getenv('PORT', 8000))
