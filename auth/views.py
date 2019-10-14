@@ -1,27 +1,14 @@
 import json
 import collections
+import aiohttp_jinja2
 from time import time
 from bson.objectid import ObjectId
-
-import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
+
 from auth.models import User
-from chat.models import UnreadMessage
-
-
-def redirect(request, router_name):
-    url = request.app.router[router_name].url_for()
-    raise web.HTTPFound(url)
-
-
-def set_session(session, user_id, request):
-    session['user'] = str(user_id)
-    session['last_visit'] = time()
-    redirect(request, 'main')
-
-def convert_json(message):
-    return json.dumps({'error': message})
+from utils import get_context
+from auth.utils import redirect, set_session, convert_json
 
 
 class Login(web.View):
@@ -31,7 +18,7 @@ class Login(web.View):
         session = await get_session(self.request)
         if session.get('user'):
             redirect(self.request, 'main')
-        return {'content': 'Please, enter login or e-mail'}
+        return {'is_socket': False}
 
     async def post(self):
         data = await self.request.post()
@@ -51,7 +38,7 @@ class SignIn(web.View):
         # sesion = await get_session(self.request)
         # if session.get('user'):
         #     redirect(self.request, 'main')
-        return {'content': 'Please, enter login and pass'}
+        return {'is_socket': False}
 
     async def post(self, **kw):
         data = await self.request.post()
@@ -62,6 +49,7 @@ class SignIn(web.View):
             set_session(session, str(result), self.request)
         else:
             return web.Response(content_type='application/json', text=convert_json(result))
+
 
 class SignOut(web.View):
 
@@ -77,28 +65,21 @@ class SignOut(web.View):
 class AccountDetails(web.View):
 
     @aiohttp_jinja2.template('auth/account.html')
-    async def get(self, **kw):
-        user = User(self.request.app.db, {})
+    @get_context
+    async def get(self, data, **kw):
+        data['user'].login = data['login']
+        account = await data['user'].check_user()
 
-        session = await get_session(self.request)
-        self_id = session.get('user')
-        login = await user.get_login(self_id)
-        user.login = login
-        account = await user.check_user()
-        users = await user.get_all_users()
-
-        unread = UnreadMessage(self.request.app.db)
-        r_unread = await unread.get_messages_recieved(self_id)
-        unread_counter = collections.Counter()
-        for mes in r_unread:
-            unread_counter[mes['from_user']] += 1
-
-        context = {
-            'users': users,
-            'user': account,
-            'unread_counter': unread_counter, 
+        context_data = {
+            'users': data['users'],
+            'own': account,
+            'unread_counter': data['unread_counter'],
+            'own_login': data['login'],
+            'is_socket': True,
+            'online': data['online_id'],
+            'self_id': data['self_id']
         }
-        return context
+        return context_data
 
     async def post(self, **kw):
         user = User(self.request.app.db, {})
@@ -107,6 +88,5 @@ class AccountDetails(web.View):
         session = await get_session(self.request)
         self_id = session.get('user')
         login = await user.get_login(self_id)
-        
         await user.update_user(self_id, data)
         return web.json_response({})

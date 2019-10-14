@@ -19,10 +19,6 @@ class User():
         result =  await self.collection.find_one({'_id': ObjectId(user_id)})
         return result['login']
 
-    # async def get_login(self, **kw):
-    #     user = await self.collection.find_one({'_id': ObjectId(self.id)})
-    #     return user.get('login')
-
     async def get_all_users(self, **kw):
         users = await self.collection.find().to_list(length=100)
         for u in users:
@@ -43,3 +39,6 @@ class User():
             data
         )
         return result
+
+    async def clear_db(self):
+        await self.collection.drop()

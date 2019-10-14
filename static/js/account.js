@@ -41,17 +41,28 @@ $(document).ready(function(){
         if (errors){
             return
         }
-        var new_data = {
-            'login': $('#login').val(),
-            'password': $('#password').val(),
-            'name': $('#name').val(),
-            'sername': $('#sername').val(),
-            'email': $('#email').val(),
-            'bday': $('#bday').val(),
+        var new_data = {}
+        if ($('#login').val() != ''){
+            new_data['login'] = $('#login').val()
+        }
+        if ($('#password').val() != ''){
+            new_data['password'] = $('#password').val()
+        }
+        if ($('#name').val() != ''){
+            new_data['name'] = $('#name').val()
+        }
+        if ($('#sername').val() != ''){
+            new_data['sername'] = $('#sername').val()
+        }
+        if ($('#email').val() != ''){
+            new_data['email'] = $('#email').val()
+        }
+        if ($('#bday').val() != ''){
+            new_data['bday'] = $('#bday').val()
         }
         $.post('account', JSON.stringify(new_data), function(data){
             if (data.error){
-                showError(data.error);
+                showError('ПРоблема на стороне сервера');
             }else{
                 showSucces();
                 if (data['login'] != ''){

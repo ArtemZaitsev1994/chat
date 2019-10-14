@@ -39,6 +39,10 @@ class UnreadMessage():
         })
         return result
 
+    async def get_messages_from_main(self):
+        messages = self.collection.find({'chat_name': 'main'})
+        return await messages.to_list(length=None)
+
     async def get_messages_recieved(self, user_id):
         messages = self.collection.find({'to_user': user_id})
         return await messages.to_list(length=None)

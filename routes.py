@@ -1,6 +1,6 @@
 from chat.views import ChatList, WebSocket, main_redirect, update_unread
 from auth.views import Login, SignIn, SignOut, AccountDetails
-from about.views import about_main
+from about.views import About
 
 
 routes = [
@@ -12,5 +12,5 @@ routes = [
     ('*',    '/signin',  SignIn,         'signin'),
     ('*',    '/signout', SignOut,        'signout'),
     ('*',    '/account', AccountDetails, 'account'),
-    ('GET',  '/about',   about_main,     'about_main'),
+    ('*',    '/about',   About,          'about_main'),
 ]

@@ -1,4 +1,5 @@
 $(document).ready(function(){
+    console.log(1)
     var sock = {};
 
     var chat_name = $('#my-data').data().name
@@ -6,7 +7,7 @@ $(document).ready(function(){
     var to_user_login = $('#my-data').data().to_user_login
     var own_login = $('#my-data').data().own_login
     var self_id = $('#my-data').data().self_id
-    var online_id = $('#my-data').data().online_id
+    var online_id = $('#my-data').data().online_id.split('#')
     
 
     var counter = new Proxy({}, {
@@ -15,6 +16,12 @@ $(document).ready(function(){
 
     $('.btn_chat').each(function(){
         counter[this.id] = this.value
+        if (this.value > 0){
+            $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-info')
+            // $(`#${this.id}`).text(`${this.id.slice(4)} (${this.value})`)
+        } else if ($.inArray(this.id.slice(5), online_id) != -1){
+            $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-success')
+        }
     })
     try{
         sock = new WebSocket('ws://' + window.location.host + '/ws?chat_name=' + $('#my-data').data().name);
@@ -33,15 +40,20 @@ $(document).ready(function(){
 
         try{
             var messageObj = JSON.parse(message);
+            console.log(messageObj)
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
                 messageElem.append($('<p class="unread">').html(htmlText));
-                
                 if (messageObj.to_user == self_id){
                     c = ++counter[`user_${messageObj.from}`]
                     $(`#user_${messageObj.from}`).val(c)
                     $(`#user_${messageObj.from}`).removeClass('btn-success').addClass('btn-info')
                     $(`#user_${messageObj.from}`).text(`${messageObj.from} (${c})`)
+                } else if(messageObj.chat_name == 'main') {
+                    c = ++counter['main']
+                    $('#main_chat').val(c)
+                    $('#main_chat').removeClass('btn-outline-success').addClass('btn-info')
+                    $('#main_chat').text(`Тусэ_web (${c})`)
                 }
 
             } else if(messageObj.type == 'joined'){
@@ -72,7 +84,7 @@ $(document).ready(function(){
     }
 
     function updateUnread(){
-        if (counter[`user_${to_user_login}`] > 0){
+        if (counter[`user_${to_user_login}`] > 0 || counter[chat_name] > 0){
             data = {
                 'login': own_login,
                 'self_id': self_id,
@@ -82,7 +94,7 @@ $(document).ready(function(){
             setTimeout(function(){
                 $.ajax({
                     dataType: 'json',
-                    url: 'http://0.0.0.0:8080/update',
+                    url: '/update',
                     type: 'POST',
                     data: JSON.stringify(data),
                     success: function(data) {

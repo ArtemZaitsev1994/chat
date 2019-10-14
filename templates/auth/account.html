@@ -37,31 +37,31 @@
                 <div id="error" style="color: red;"></div>
                 <div id="success" style="color: green;"></div>
                 <div class="form-group">
-                    <div id="login_label">Ваш логин: {{user.login}}</div>
+                    <div id="login_label">Ваш логин: {{own.login}}</div>
                         <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Чтобы изменить введите новый логин" id="login">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="name_label">Имя: {% if user.name %}{{user.name}}{% else %}Не указано{% endif %}</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if user.name %}Чтобы изменить введите новое имя{% else %}Введите свое имя{% endif %}" id="name">
+                    <div id="name_label">Имя: {% if own.name %}{{own.name}}{% else %}Не указано{% endif %}</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if own.name %}Чтобы изменить введите новое имя{% else %}Введите свое имя{% endif %}" id="name">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="sername_label">Фамилия: {% if user.sername %}{{user.sername}}{% else %}Не указано{% endif %}</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if user.sername %}Чтобы изменить введите новую фамилию{% else %}Введите свою фамилию{% endif %}" id="sername">
+                    <div id="sername_label">Фамилия: {% if own.sername %}{{own.sername}}{% else %}Не указано{% endif %}</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if own.sername %}Чтобы изменить введите новую фамилию{% else %}Введите свою фамилию{% endif %}" id="sername">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="email_label">E-mail: {% if user.email %}{{user.email}}{% else %}Не указано{% endif %}</div>
-                        <input type="email" class="form-control" placeholder="{% if user.email %}Чтобы изменить введите новый e-mail{% else %}Введите свой e-mail{% endif %}" id="email">
+                    <div id="email_label">E-mail: {% if own.email %}{{own.email}}{% else %}Не указано{% endif %}</div>
+                        <input type="email" class="form-control" placeholder="{% if own.email %}Чтобы изменить введите новый e-mail{% else %}Введите свой e-mail{% endif %}" id="email">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="bday_label">День рождения: {% if user.bday %}{{user.bday}}{% else %}Не указано{% endif %}</div>
+                    <div id="bday_label">День рождения: {% if own.bday %}{{own.bday}}{% else %}Не указано{% endif %}</div>
                         <input type="date" class="form-control" id="bday">
                 </div>
                 <hr>
@@ -80,13 +80,12 @@
                 <p>
                     <input class="btn btn-primary" id="submit" title="Сохранить" type="button" value="Сохранить">
                 </p>
-                {{user}}
             </form>
         </div>    
     </div>
 </div>
 {% endblock %}
 
+<script src="{{ static('js/account.js') }}"></script>
 {% block footer %}
-    <script src="{{ static('js/account.js') }}"></script>
 {% endblock %}
