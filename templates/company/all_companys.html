@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}
+ТусЭ about
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container" id='messages_box'>
+    <meta id="my-data" >
+    <br>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            {% for comp in companys %}
+                <div>
+                <a href="{{ '/company?id=%s'%comp._id|urlencode }}">
+                        <button 
+                            type="button" 
+                            class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
+                            id="user_{{comp.name}}" 
+                            value="{{unread_counter[comp.name]}}">
+                                {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
+                        </button>
+                </a>
+                </div>
+            {% endfor %}
+        </div>   
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+{% endblock %}

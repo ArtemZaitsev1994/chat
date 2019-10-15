@@ -13,7 +13,7 @@ from utils import get_context
 
 
 async def main_redirect(request):
-    location = request.app.router['main'].url_for()
+    location = request.app.router['account'].url_for()
     raise web.HTTPFound(location=location)
 
 

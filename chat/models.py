@@ -39,8 +39,8 @@ class UnreadMessage():
         })
         return result
 
-    async def get_messages_from_main(self):
-        messages = self.collection.find({'chat_name': 'main'})
+    async def get_messages_from_main(self, user_id):
+        messages = self.collection.find({'chat_name': 'main'}, )
         return await messages.to_list(length=None)
 
     async def get_messages_recieved(self, user_id):
@@ -56,3 +56,14 @@ class UnreadMessage():
 
     async def clear_db(self):
         await self.collection.drop()
+
+    async def get_mess_by_comp(self, user_id, comp):
+        result = {}
+        for c in comp:
+            result[c['name']] = len(await self.collection.find({
+                'chat_name': c['name'],
+                'to_user': user_id,
+            }).to_list(length=None))
+        return result
+
+

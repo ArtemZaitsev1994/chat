@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}
+ТусЭ about
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container" id='messages_box'>
+    <meta id="my-data" >
+    <br>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            {% for comp in my_companys %}
+                <div>
+                <a href="{{ '/chat?id=%s'%user._id|urlencode }}">
+                        <button 
+                            type="button" 
+                            class="btn btn-success btn-sm btn-block btn_chat" 
+                            id="user_{{comp.name}}" 
+                            value="{{unread_counter[comp.name]}}">
+                                {{comp.name}} 
+                        </button>
+                </a>
+                </div>
+            {% endfor %}
+        </div>   
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-10">
+            <form autocomplete="on">
+                <div><h4>Создание новой Компашки</h4></div>
+                <div id="error" style="color: red;"></div>
+                <div id="success" style="color: green;"></div>
+                <div class="form-group">
+                    <label>Введите имя компании
+                        <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Login" id="name" required>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Закрытая
+                        <input type="checkbox" class="form-control", id="private">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Введите пароль
+                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password" required disabled>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Подтвердите пароль
+                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password" required disabled>
+                    </label>
+                </div>
+                <p>
+                    <input class="btn btn-primary" id="submit" title="Создать ТусЭ" type="button" value="Создать ТусЭ">
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+{% endblock %}

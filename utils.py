@@ -3,6 +3,7 @@ from aiohttp import web
 from aiohttp_session import get_session
 from auth.models import User
 from chat.models import UnreadMessage
+from company.models import Company
 
 
 def get_context(func):
@@ -30,6 +31,32 @@ def get_context(func):
             'unread': unread,
             'unread_counter': unread_counter,
             'online_id': online_id,
+        }
+        return await func(self, context)
+    return wrap
+
+
+def get_companys_context(func):
+    async def wrap(self):
+        session = await get_session(self.request)
+
+        user = User(self.request.app.db, {})
+        self_id = session.get('user')
+        login = await user.get_login(self_id)
+
+        company = Company(self.request.app.db)
+        my_comp = await company.get_company_by_user(self_id)
+
+        unread = UnreadMessage(self.request.app.db)
+        unread_counter = await unread.get_mess_by_comp(self_id, my_comp)
+
+        context = {
+            'user': user,
+            'session': session,
+            'self_id': self_id,
+            'login': login,
+            'unread': unread,
+            'unread_counter': unread_counter,
         }
         return await func(self, context)
     return wrap

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+ТусЭ about
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container" id='messages_box'>
+    <meta id="my-data" >
+    <br>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div>Название ТусЭ: {{company.name}}</div>
+            <div>Состав: </div>
+            {% for user in company.users %}
+            {{user[0]}}
+            {% endfor %}
+        </div>   
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+{% endblock %}

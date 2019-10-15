@@ -17,7 +17,7 @@ class Login(web.View):
     async def get(self):
         session = await get_session(self.request)
         if session.get('user'):
-            redirect(self.request, 'main')
+            redirect(self.request, 'account')
         return {'is_socket': False}
 
     async def post(self):
