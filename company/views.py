@@ -58,15 +58,42 @@ class Company(web.View):
         company_id = self.request.rel_url.query.get('id')
         data['company'] = await company.get_company(company_id)
 
-        if data['company']['private']:
-            access = next((x for x in data['company']['users'] if x[1] == self_id), None)
-            if not access:
-                raise web.HTTPForbidden()
+        access = next((x for x in data['company']['users'] if x[1] == self_id), None)
+        data['is_member'] = True if access else False
 
         return data
 
+    async def post(self, **kw):
+        data = await self.request.json()
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        company = comp_model(self.request.app.db)
+        user = User(self.request.app.db, {})
 
-def check_access_to_company(request):
+        login = await user.get_login(self_id)
+        comp = await company.get_company(data['company_id'])
+        print(comp)
+        if comp['private'] and comp['password'] != data['password']:
+            return web.json_response({'error': 'Неправильный пароль'})
+        result = await company.add_user_to_comp(data['company_id'], self_id, login)
+        if result:
+            return web.json_response(True)
+    
+    async def delete(self, **kw):
+        data = await self.request.json()
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        company = comp_model(self.request.app.db)
+        user = User(self.request.app.db, {})
+
+        login = await user.get_login(self_id)
+        result = await company.delete_user_from_comp(data['company_id'], self_id, login)
+        if result:
+            return web.json_response(True)
+        return web.json_response(False)
+    
+
+async def check_access_to_company(request):
     data = await request.json()
     session = await get_session(request)
     self_id = session.get('user')

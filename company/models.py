@@ -37,10 +37,17 @@ class Company():
         result =  await self.collection.find({'users': user_id}).to_list(length=None)
         return result
 
-    async def update_user(self, _id, data):
-        result = await self.collection.replace_one(
+    async def add_user_to_comp(self, _id, user_id, login):
+        result = await self.collection.update(
             {'_id': ObjectId(_id) },
-            data
+            {'$push': {'users': (login, user_id)}}
+        )
+        return result
+        
+    async def delete_user_from_comp(self, _id, user_id, login):
+        result = await self.collection.update(
+            {'_id': ObjectId(_id) },
+            {'$pull': {'users': (login, user_id)}}
         )
         return result
 

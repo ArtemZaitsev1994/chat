@@ -17,6 +17,6 @@ routes = [
     ('*',    '/my_companys',  MyCompany,        'my_companys'),
     ('*',    '/all_companys', AllCompanys,    'all_companys'),
     ('*',    '/company',      Company,        'company'),
-    ('POST', '/check_access_to_company', check_access_to_company, 'check_access_to_company')
+    ('POST', '/check_access_to_company', check_access_to_company, 'check_access_to_company'),
 
 ]

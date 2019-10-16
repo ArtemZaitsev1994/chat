@@ -1,5 +1,4 @@
 $(document).ready(function(){
-    console.log(1)
     var sock = {};
 
     var chat_name = $('#my-data').data().name

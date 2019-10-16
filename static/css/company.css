@@ -1,0 +1,27 @@
+.pic {
+height: 188px;
+width: 188px;
+overflow: hidden; /*Скрывает все, что не влазит в блок*/
+margin: 9px;
+border: 10px solid #fff; /*Для всех браузеров*/
+-webkit-box-shadow: 2px 3px 10px #6E6E6E;
+box-shadow: 2px 3px 10px #6E6E6E;
+float: left;}
+.pic:hover { cursor: pointer;}
+/*размеры всех картинок по усолчанию*/
+.pic img {
+width: 220px;
+height: 188px;}
+
+.tilt {
+-webkit-transition: all 0.5s ease;
+-moz-transition: all 0.5s ease;
+-o-transition: all 0.5s ease;
+-ms-transition: all 0.5s ease;
+transition: all 0.5s ease;}
+.tilt:hover {
+-webkit-transform: rotate(-10deg);
+-moz-transform: rotate(-10deg);
+-o-transform: rotate(-10deg);
+-ms-transform: rotate(-10deg);
+transform: rotate(-10deg);}

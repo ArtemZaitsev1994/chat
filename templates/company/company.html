@@ -8,22 +8,111 @@
     <link href="{{ static('css/chat.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
-<div class="container" id='messages_box'>
-    <meta id="my-data" >
+<div class="container" id='about_company'>
+    <meta id="company-data" 
+        data-company_id="{{company._id}}"
+    >
     <br>
+    {% if is_member %}
     <div class="row">
-        <div class="col-2"></div>
+        <div class="col">
+            <a href="#">
+                <div class="tilt pic">
+                    <img src="{{static('img/stories.jpg')}}" />
+                </div>
+                <h2><span>Создать ивент</span></h2>
+                <p>Вы можете организовать мероприятие и пригласить всех участников этой ТусЭ</p>
+            </a>
+        </div>
+        <div class="col">
+            <a href="#">
+                <div class="tilt pic">
+                    <img src="{{static('img/stories.jpg')}}" />
+                </div>
+                <h2><span>История</span></h2>
+                <p>Посмотреть фото или видео с вечеринок ТусЭ</p>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a href="#">
+                <div class="tilt pic">
+                    <img src="{{static('img/stories.jpg')}}" />
+                </div>
+                <h2><span>Общий чат</span></h2>
+                <p>Общий чат для всех участников ТусЭ</p>
+            </a>
+        </div>
+        <div class="col">
+            <a href="#">
+                <div class="tilt pic">
+                    <img src="{{static('img/stories.jpg')}}" />
+                </div>
+                <h2><span>О ТусЭ</span></h2>
+                <p>Здесь можно почитать подробней о ТусЭ, правилах и участниках</p>
+            </a>
+        </div>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-2"></div>
+    <div class="col-8">
+
+        <a href="#">
+            <button 
+            id='quit'
+            type="button" 
+            class="btn btn-danger btn-sm btn-block">
+            Выйти из ТусЭ
+            </button>
+        </a>
+    </div>
+</div>
+{% else %}
+    {% if company.private %}
+    <div class="row">
+        <div class="col" style="background: #fcba03">
+            <div>Название ТусЭ: {{company.name}}</div>
+            <div>Состав: </div>
+            {% for user in company.users %}
+                {{user[0]}}
+            {% endfor %}
+            <div style="display:flex">   
+                <div id="error" style="color: red;"></div>
+                <button type='button' id='accept' class='btn btn-primary btn-sm btn-block'>Вступить в ТусЭ (нужен пароль от админа):</button><input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Password" id="password" required>
+            </div>
+            <button type='button' class='btn btn-info btn-sm btn-block'>Попроситься в группу</button>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
         <div class="col-8">
             <div>Название ТусЭ: {{company.name}}</div>
+            <div>О ТусЭ: {{ company.about }}</div>
             <div>Состав: </div>
             {% for user in company.users %}
             {{user[0]}}
             {% endfor %}
-        </div>   
+            <button type='button' id='accept' class='btn btn-primary btn-sm btn-block'>Вступить в ТусЭ</button>
+        </div>
+        <div class="col">
+            <a href="#">
+                <div class="tilt pic">
+                    <img src="{{static('img/stories.jpg')}}" />
+                </div>
+                <h2><span>История</span></h2>
+                <p>Посмотреть фото или видео с вечеринок ТусЭ</p>
+            </a>
+        </div>
     </div>
+    {% endif %}
+{% endif %}
 </div>
 {% endblock %}
 
 {% block footer %}
-<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
+<script type="text/javascript" src="{{ static('js/company_accept.js') }}"></script>
 {% endblock %}
