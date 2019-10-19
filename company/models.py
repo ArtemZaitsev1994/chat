@@ -14,14 +14,13 @@ class Company():
     async def get_company_by_name(self, name, **kw):
         return await self.collection.find_one({'name': name})
 
-    async def create_company(self, data, admin_id, login, **kw):
+    async def create_company(self, data, admin_id, **kw):
         company = await self.get_company_by_name(data['name'])
         if not company:
             result = await self.collection.insert({
                 **data,
-                'users': [(login, admin_id)],
-                'admin_id': admin_id,
-                'admin': login
+                'users': [admin_id],
+                'admin_id': admin_id
             })
         else:
             result = False
@@ -37,18 +36,22 @@ class Company():
         result =  await self.collection.find({'users': user_id}).to_list(length=None)
         return result
 
-    async def add_user_to_comp(self, _id, user_id, login):
+    async def add_user_to_comp(self, _id, user_id):
         result = await self.collection.update(
             {'_id': ObjectId(_id) },
-            {'$push': {'users': (login, user_id)}}
+            {'$push': {'users': user_id}}
         )
         return result
         
-    async def delete_user_from_comp(self, _id, user_id, login):
+    async def delete_user_from_comp(self, _id, user_id):
         result = await self.collection.update(
             {'_id': ObjectId(_id) },
-            {'$pull': {'users': (login, user_id)}}
+            {'$pull': {'users': user_id}}
         )
+        return result
+
+    async def delete(self, comp_id):
+        result = await self.collection.delete_many({'_id': ObjectId(comp_id)})
         return result
 
     async def clear_db(self):

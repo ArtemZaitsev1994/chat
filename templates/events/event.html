@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h4>
+    Создать ивент.
+    </h4>
+    <a href="{{ '/comp_event_list?id=%s'%company_id|urlencode }}">
+        <input class="btn btn-primary" title="Ивенты ТусЭ" type="button" value="Ивенты ТусЭ">
+    </a>
+    <div class="row">
+        <div class="col-2">
+            
+        </div>    
+        <div class="col-3">
+            <form autocomplete="on">
+                <div id="error" style="color: red;"></div>
+                <div id="success" style="color: green;"></div>
+                <div class="form-group">
+                    <label>Название ивента
+                        <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Name" id="name" required>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Анонс
+                        <textarea type="text" class="form-control" placeholder="Email", id="about" required></textarea>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Дата
+                        <input type="date" class="form-control", id="date" required>
+                    </label>
+                    <label>Время
+                        <input type="time" class="form-control", id="time">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Только для участников ТусЭ {{company_id}}
+                        <input type="checkbox" class="form-control", id="private">
+                    </label>
+                </div>
+                <p>
+                    <input class="btn btn-primary" id="submit" title="Создать ивент" type="button" value="Создать ивент">
+                </p>
+            </form>
+        </div>  
+        <div class="col-2"><img src="{{ static('photo/main.gif') }}"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script src="{{ static('js/event.js') }}"></script>
+{% endblock %}

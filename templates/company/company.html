@@ -16,7 +16,7 @@
     {% if is_member %}
     <div class="row">
         <div class="col">
-            <a href="#">
+            <a href="{{ '/event?id=%s'%company._id|urlencode }}">
                 <div class="tilt pic">
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
@@ -25,7 +25,7 @@
             </a>
         </div>
         <div class="col">
-            <a href="#">
+            <a href="{{ '/comp_event_list?id=%s'%company._id|urlencode }}">
                 <div class="tilt pic">
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
@@ -56,6 +56,22 @@
     </div>
 </div>
 <br>
+{% if is_admin %}
+<div class="row">
+    <div class="col-2"></div>
+    <div class="col-8">
+
+        <a href="#">
+            <button 
+            id='delete'
+            type="button" 
+            class="btn btn-danger btn-sm btn-block">
+            Удалить ТусЭ
+            </button>
+        </a>
+    </div>
+</div>
+{% else %}
 <div class="row">
     <div class="col-2"></div>
     <div class="col-8">
@@ -70,6 +86,7 @@
         </a>
     </div>
 </div>
+{% endif %}
 {% else %}
     {% if company.private %}
     <div class="row">

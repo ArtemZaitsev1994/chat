@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link href=" {{ static('css/vendor/jquery.fancybox.min.css') }}" rel="stylesheet" type="text/css" >
+    <style>
+        img {
+            padding: 4px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        img:hover {
+            opacity: 0.6;
+            filter: alpha(opacity=60);
+        }
+    </style>
+</head>
+<div class="container">
+    <h4>
+    {{event.name}}
+    </h4>
+    <div class="row">
+        <div class="col-2">
+            
+        </div>
+        {% if access %}    
+        <div class="col-3">
+            <div class="col">Название: {{event.name}}</div>
+                    <div class="col">Анонс: {{event.about}}</div>
+                    <div class="col">Дата: {{event.date}} {{event.time}}</div>
+                    {% if event.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}    
+        </div>
+            {% if event.avatar == '' %}
+                <h2>ТусЭ</h2>
+            {% else %}
+            <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(event._id, event.avatar)) }}"></div>
+            {% endif %}
+        
+        {% else %}
+        <div class="col-3">Доступ ограничен</div>
+        {% endif %}
+    </div>
+   
+    <hr>
+        <div class="row">
+            <form action="/photo" method="post" accept-charset="utf-8"
+                  enctype="multipart/form-data">
+                <label for="photo">Загрузить фотографии</label>
+                <input id="photo" name="photo" type="file" value="" />
+                <input id="event_id" name="event_id" type="hidden" value="{{event._id}}" />
+                <input type="submit" value="Отправить" />
+            </form>
+        </div>
+         <hr>
+    <div class="container">
+        <div class="grid">
+            
+            {% for p in event.photo %}
+
+            <a data-fancybox="gallery" href="{{ static('photo/%s/%s'%(event._id, p)) }}">
+                <img class="img-fluid" src="{{ static('photo/%s/%s'%(event._id, p)) }}" alt="...">
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script type="text/javascript" src="{{ static('js/vendor/popper.min.js') }}"></script>
+<script type="text/javascript" src="{{ static('js/vendor/jquery.fancybox.min.js') }}"></script>
+<script type="text/javascript" src="{{ static('js/vendor/gridify.js') }}"></script>
+<script>
+$(function() {
+    var options = {
+        srcNode: 'img',             // grid items
+        margin: '15px',             // margin in pixel
+        width: '240px',             // grid item width in pixel
+        max_width: '',              // dynamic gird item width
+        resizable: true,            // re-layout if window resize
+        transition: 'all 0.5s ease' // support transition for CSS3
+    };
+    $('.grid').gridify(options);
+});
+</script>
+<!-- 
+<script src="{{ static('js/download.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ static('css/download.css') }}"> -->
+{% endblock %}

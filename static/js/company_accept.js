@@ -45,12 +45,31 @@ $(document).ready(function(){
         }
         $.ajax({
             dataType: 'json',
-            url: '/company',
+            url: '/my_companys',
             type: 'DELETE',
             data: JSON.stringify(data),
             success: function(data) {
                 if (data){
                      location.reload();
+                } else {
+                    showError('Ошибка на стороне сервера')
+                }
+            }
+        });
+
+    })
+    $('#delete').on('click', () => {
+        data = {
+            'company_id': company_id
+        }
+        $.ajax({
+            dataType: 'json',
+            url: '/company',
+            type: 'DELETE',
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data){
+                     window.location.replace("/all_companys");
                 } else {
                     showError('Ошибка на стороне сервера')
                 }

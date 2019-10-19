@@ -13,7 +13,7 @@ def get_context(func):
         user = User(self.request.app.db, {})
         users = await user.get_all_users()
         self_id = session.get('user')
-        login = await user.get_login(self_id)
+        login = session.get('login')
 
         unread = UnreadMessage(self.request.app.db)
         r_unread = await unread.get_messages_recieved(self_id)
@@ -39,10 +39,8 @@ def get_context(func):
 def get_companys_context(func):
     async def wrap(self):
         session = await get_session(self.request)
-
-        user = User(self.request.app.db, {})
         self_id = session.get('user')
-        login = await user.get_login(self_id)
+        login = session.get('login')
 
         company = Company(self.request.app.db)
         my_comp = await company.get_company_by_user(self_id)
@@ -51,7 +49,6 @@ def get_companys_context(func):
         unread_counter = await unread.get_mess_by_comp(self_id, my_comp)
 
         context = {
-            'user': user,
             'session': session,
             'self_id': self_id,
             'login': login,

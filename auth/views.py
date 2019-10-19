@@ -26,7 +26,7 @@ class Login(web.View):
         result = await user.check_user()
         if isinstance(result, dict):
             session = await get_session(self.request)
-            set_session(session, str(result['_id']), self.request)
+            set_session(session, str(result['_id']), user.login, self.request)
         else:
             return web.Response(content_type='application/json', text=convert_json(result))
 
@@ -46,7 +46,7 @@ class SignIn(web.View):
         result = await user.create_user()
         if isinstance(result, ObjectId):
             session = await get_session(self.request)
-            set_session(session, str(result), self.request)
+            set_session(session, str(result), user.login, self.request)
         else:
             return web.Response(content_type='application/json', text=convert_json(result))
 

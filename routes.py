@@ -1,22 +1,32 @@
 from chat.views import ChatList, WebSocket, main_redirect, update_unread
 from auth.views import Login, SignIn, SignOut, AccountDetails
-from about.views import About
+from about.views import About, drop_all
 from company.views import Company, AllCompanys, MyCompany, check_access_to_company
-
+from events.views import Event, CompEventList, CompEvent, Photo
 
 routes = [
     ('GET',  '/',             main_redirect,  'main_redirect'),
     ('GET',  '/chat',         ChatList,       'main'),
     ('GET',  '/ws',           WebSocket,      'chat'),
     ('POST', '/update',       update_unread,  'update'),
+
     ('*',    '/login',        Login,          'login'),
     ('*',    '/signin',       SignIn,         'signin'),
     ('*',    '/signout',      SignOut,        'signout'),
     ('*',    '/account',      AccountDetails, 'account'),
-    ('*',    '/about',        About,          'about_main'),
-    ('*',    '/my_companys',  MyCompany,        'my_companys'),
+
+
+    ('*',    '/my_companys',  MyCompany,      'my_companys'),
     ('*',    '/all_companys', AllCompanys,    'all_companys'),
     ('*',    '/company',      Company,        'company'),
     ('POST', '/check_access_to_company', check_access_to_company, 'check_access_to_company'),
 
+    ('*', '/event',           Event,         'event'),
+    ('*', '/comp_event_list', CompEventList, 'comp_event_list'),
+    ('*', '/comp_event',      CompEvent,     'comp_event'),
+    ('*', '/photo',           Photo,         'photo'),
+
+    ('*',   '/about',    About,    'about_main'),
+    # ОЧИСТКА БАЗЫ!!!!!!!!!!!
+    ('GET', '/drop_all', drop_all, 'drop_all'),
 ]

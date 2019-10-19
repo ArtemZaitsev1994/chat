@@ -14,6 +14,9 @@ from motor import motor_asyncio as ma
 from settings import *
 
 
+basedir = os.path.dirname(os.path.realpath(__file__))
+photo_dir = os.path.join(basedir, 'static/photo/')
+
 async def on_shutdown(app):
     for ws in app['websockets']:
         await ws.close(code=1001, mesage='Server shutdown')
@@ -38,5 +41,6 @@ app.db = app.client[MONGO_DB_NAME]
 app.on_cleanup.append(on_shutdown)
 app['websockets'] = collections.defaultdict(list)
 app['online'] = {}
+app['photo_dir'] = photo_dir
 
 web.run_app(app)
