@@ -14,7 +14,7 @@ def set_session(session, user_id, login, request):
     session['user'] = str(user_id)
     session['login'] = login
     session['last_visit'] = time()
-    redirect(request, 'main')
+    redirect(request, 'account')
 
 
 def convert_json(message):

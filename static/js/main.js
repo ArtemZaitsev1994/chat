@@ -7,6 +7,7 @@ $(document).ready(function(){
     var own_login = $('#my-data').data().own_login
     var self_id = $('#my-data').data().self_id
     var online_id = $('#my-data').data().online_id.split('#')
+    var company_id = $('#my-data').data().company_id
     
 
     var counter = new Proxy({}, {
@@ -22,11 +23,20 @@ $(document).ready(function(){
             $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-success')
         }
     })
-    try{
-        sock = new WebSocket('ws://' + window.location.host + '/ws?chat_name=' + $('#my-data').data().name);
-    }
-    catch(err){
-        sock = new WebSocket('wss://' + window.location.host + '/ws?chat_name=' + $('#my-data').data().name);
+    if (typeof company_id === "undefined"){
+        try{
+            sock = new WebSocket('ws://' + window.location.host + '/ws?chat_name=' + chat_name);
+        }
+        catch(err){
+            sock = new WebSocket('wss://' + window.location.host + '/ws?chat_name=' + chat_name);
+        }
+    } else {
+        try{
+            sock = new WebSocket('ws://' + window.location.host + '/ws_company?company_id=' + company_id);
+        }
+        catch(err){
+            sock = new WebSocket('wss://' + window.location.host + '/ws_company?company_id=' + company_id);
+        }
     }
 
     // show message in div#subscribe
@@ -39,20 +49,19 @@ $(document).ready(function(){
 
         try{
             var messageObj = JSON.parse(message);
-            console.log(messageObj)
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
                 messageElem.append($('<p class="unread">').html(htmlText));
-                if (messageObj.to_user == self_id){
+                if (messageObj.company_id != company_id){
                     c = ++counter[`user_${messageObj.from}`]
                     $(`#user_${messageObj.from}`).val(c)
                     $(`#user_${messageObj.from}`).removeClass('btn-success').addClass('btn-info')
                     $(`#user_${messageObj.from}`).text(`${messageObj.from} (${c})`)
-                } else if(messageObj.chat_name == 'main') {
+                } else if (messageObj.from_id != self_id){
                     c = ++counter['main']
                     $('#main_chat').val(c)
                     $('#main_chat').removeClass('btn-outline-success').addClass('btn-info')
-                    $('#main_chat').text(`Тусэ_web (${c})`)
+                    $('#main_chat').text(`Общий (${c})`)
                 }
 
             } else if(messageObj.type == 'joined'){
@@ -78,6 +87,7 @@ $(document).ready(function(){
             'chat_name': chat_name,
             'to_user': to_user,
             'to_user_login': to_user_login,
+            'company_id': company_id,
         }));
         msg.val('').focus();
     }

@@ -16,7 +16,7 @@
     {% if is_member %}
     <div class="row">
         <div class="col">
-            <a href="{{ '/event?id=%s'%company._id|urlencode }}">
+            <a href="{{ '/event?chat_id=%s'%company._id|urlencode }}">
                 <div class="tilt pic">
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
@@ -36,7 +36,7 @@
     </div>
     <div class="row">
         <div class="col">
-            <a href="#">
+            <a href="{{ '/chat?company_id=%s'%company._id|urlencode }}">
                 <div class="tilt pic">
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>

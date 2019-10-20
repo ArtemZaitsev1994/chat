@@ -13,24 +13,6 @@
     <br>
     <div class="row">
         <div class="col-2">
-                <a href="{{ '/chat'|urlencode }}">
-                    <div>
-                        <button type="button" class="btn btn-outline-success btn-sm btn-block">Тусэ_web</button>
-                    </div>
-                </a>
-            {% for user in users %}
-                <div>
-                <a href="{{ '/chat?id=%s'%user._id|urlencode }}">
-                        <button 
-                            type="button" 
-                            class="btn btn-{% if user.login not in online %}secondary{% elif unread_counter[user._id] > 0 %}info{% else %}success{% endif %} btn-sm btn-block btn_chat" 
-                            id="user_{{user.login}}" 
-                            value="{{unread_counter[user._id]}}">
-                                {{user.login}} {% if unread_counter[user._id] > 0 %}({{unread_counter[user._id]}}){% endif %} 
-                        </button>
-                </a>
-                </div>
-            {% endfor %}
         </div>    
         <div class="col-8">
             <form autocomplete="on">

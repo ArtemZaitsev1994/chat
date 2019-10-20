@@ -14,7 +14,7 @@ Main Chat page
         <div class="col-2"></div>
         <div class="col-2">
             {% if to_user_login == 'main' %}
-                ТусЭ
+                Общий
             {% elif to_user_login == own_login %}
                 Чат с самим сабим
             {% else %}
@@ -24,9 +24,9 @@ Main Chat page
     </div>
     <div class="row">
         <div class="col-2">
-                <a href="{{ '/chat'|urlencode }}">
+                <a href="{{ '/chat?company_id=%s'%company_id|urlencode }}">
                     <div>
-                        <button type="button" id="main_chat" class="btn btn-outline-success btn-sm btn-block">Тусэ_web</button>
+                        <button type="button" id="main_chat" class="btn btn-outline-success btn-sm btn-block">Общий {{unread_counter}}</button>
                     </div>
                 </a>
             {% for user in users %}
@@ -36,8 +36,8 @@ Main Chat page
                             type="button" 
                             class="btn btn-secondary btn-sm btn-block btn_chat" 
                             id="user_{{user.login}}" 
-                            value="{{unread_counter[user._id]}}">
-                                {{user.login}}{% if unread_counter[user._id] > 0 %} ({{unread_counter[user._id]}}){% endif %} 
+                            value="{{unread_counter}}">
+                                {{user.login}}
                         </button>
                 </a>
                 </div>
@@ -46,7 +46,7 @@ Main Chat page
         <div class="col-8">
             <div id='subscribe'>
                 {% for mes in messages %}
-                  <p {% if mes._id in unread_mess %}class="unread"{% endif %}>[{{ mes['time'].strftime('%H:%M:%S') }}] 
+                  <p {% if mes.unread %}class="unread"{% endif %}>[{{ mes['time'].strftime('%H:%M:%S') }}] 
                     <span class="user">{{ mes['from_user'] }}</span>: {{ mes['msg'] }}
                   </p>
                 {% endfor %}

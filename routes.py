@@ -1,19 +1,19 @@
-from chat.views import ChatList, WebSocket, main_redirect, update_unread
+from chat.views import ChatList, CompanyWebSocket, main_redirect, update_unread
 from auth.views import Login, SignIn, SignOut, AccountDetails
 from about.views import About, drop_all
 from company.views import Company, AllCompanys, MyCompany, check_access_to_company
 from events.views import Event, CompEventList, CompEvent, Photo
 
 routes = [
-    ('GET',  '/',             main_redirect,  'main_redirect'),
-    ('GET',  '/chat',         ChatList,       'main'),
-    ('GET',  '/ws',           WebSocket,      'chat'),
-    ('POST', '/update',       update_unread,  'update'),
+    ('GET',  '/',           main_redirect,    'main_redirect'),
+    ('GET',  '/chat',       ChatList,         'chat_list'),
+    ('GET',  '/ws_company', CompanyWebSocket, 'chat'),
+    ('POST', '/update',     update_unread,    'update'),
 
-    ('*',    '/login',        Login,          'login'),
-    ('*',    '/signin',       SignIn,         'signin'),
-    ('*',    '/signout',      SignOut,        'signout'),
-    ('*',    '/account',      AccountDetails, 'account'),
+    ('*', '/login',   Login,          'login'),
+    ('*', '/signin',  SignIn,         'signin'),
+    ('*', '/signout', SignOut,        'signout'),
+    ('*', '/account', AccountDetails, 'account'),
 
 
     ('*',    '/my_companys',  MyCompany,      'my_companys'),
