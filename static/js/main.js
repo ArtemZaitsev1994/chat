@@ -8,6 +8,7 @@ $(document).ready(function(){
     var self_id = $('#my-data').data().self_id
     var online_id = $('#my-data').data().online_id.split('#')
     var company_id = $('#my-data').data().company_id
+    var c_id = company_id
     
 
     var counter = new Proxy({}, {
@@ -49,6 +50,7 @@ $(document).ready(function(){
 
         try{
             var messageObj = JSON.parse(message);
+            console.log(messageObj)
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
                 messageElem.append($('<p class="unread">').html(htmlText));
@@ -124,7 +126,7 @@ $(document).ready(function(){
         console.log('Connection to server started');
         $("#messages_box").hover(() =>{
             updateUnread()
-        })
+        });
     };
 
     // send message from form
@@ -145,6 +147,63 @@ $(document).ready(function(){
 
     $('#signout').click(function(){
         window.location.href = "signout";
+    });
+
+    $('.btn_chat').click(function(){
+        let user_id = this.value
+        let user_login = this.id.slice(5)
+        data = {
+            'user_id': user_id
+        }
+        $.ajax({
+            dataType: 'json',
+            url: '/user_chat',
+            type: 'POST',
+            data: JSON.stringify(data),
+            success: function(data) {
+                result = ''
+                to_user = user_id
+                chat_name = chat_name
+                to_user_login = user_login
+                messages = data.messages
+                company_id = null
+                for (mess of messages){
+                    cls = mess['unread'] ? '' : 'unread'
+                    let html_p = `<p class=${cls}>[${mess['time']}]${mess['from_user']}:${mess['msg']}</p>`
+                    result += html_p
+                }
+                $('#subscribe').html(result)
+            }
+        });
+    });
+
+    $('#main_chat').click(function(){
+        data = {
+            'company_id': c_id
+        }
+        $.ajax({
+            dataType: 'json',
+            url: '/user_chat',
+            type: 'POST',
+            data: JSON.stringify(data),
+            success: function(data) {
+                console.log(data)
+                result = ''
+                to_user = ''
+                chat_name = ''
+                to_user_login = ''
+                company_id = c_id
+
+                messages = data.messages
+                for (mess of messages){
+                    console.log(mess)
+                    cls = mess['unread'] ? '' : 'unread'
+                    let html_p = `<p class=${cls}>[${mess['time']}]${mess['from_user']}:${mess['msg']}</p>`
+                    result += html_p
+                }
+                $('#subscribe').html(result)
+            }
+        });
     });
 
     sock.onclose = function(event){

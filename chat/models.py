@@ -8,13 +8,22 @@ class Message():
     def __init__(self, db, **kwargs):
         self.collection = db[MESSAGE_COLLECTION]
 
-    async def save(self, from_user, msg, company_id, **kw):
-        result = await self.collection.insert({
-            'from_user': from_user,
-            'msg': msg,
-            'time': datetime.now(),
-            'company_id': company_id
-        })
+    async def save(self, from_user, msg, company_id=None, to_user=None, chat_name=None, **kw):
+        if company_id is None and to_user is not None:
+            result = await self.collection.insert({
+                'from_user': str(from_user),
+                'msg': msg,
+                'time': datetime.now(),
+                'to_user': str(to_user),
+                'chat_name': chat_name,
+            })
+        else:
+            result = await self.collection.insert({
+                'from_user': from_user,
+                'msg': msg,
+                'time': datetime.now(),
+                'company_id': company_id
+            })
         return result
 
     async def get_messages(self, chat_name):
@@ -35,13 +44,22 @@ class UnreadMessage():
     def __init__(self, db, **kwargs):
         self.collection = db[UNREAD_COLLECTION]
 
-    async def save(self, from_user, msg_id, to_company, **kw):
-        result = await self.collection.insert({
-            'from_user': from_user,
-            'msg_id': msg_id,
-            'to_company': to_company,
-            'count': 1
-        })
+    async def save(self, from_user, msg_id, to_company=None, to_user=None, **kw):
+        if to_user is None and to_company is not None:
+            result = await self.collection.insert({
+                'from_user': from_user,
+                'msg_id': msg_id,
+                'to_company': to_company,
+                'count': 1
+            })
+        else:
+            result = await self.collection.insert({
+                'from_user': from_user,
+                'msg_id': msg_id,
+                'to_user': to_user,
+                'count': 1
+            })
+
         return result
 
     async def get_unread(self, _id):
@@ -54,6 +72,13 @@ class UnreadMessage():
         )
         return result
 
+    async def add_unread_user_chat(self, from_user, to_user):
+        result = await self.collection.update(
+            {'from_user': from_user, 'to_user': to_user},
+            {'$inc': {'count': 1}}
+        )
+        return result
+
 
     async def get_messages_from_main(self, user_id):
         messages = self.collection.find({'chat_name': 'main'}, )
@@ -61,6 +86,9 @@ class UnreadMessage():
 
     async def check_unread(self, company_id):
         return await self.collection.find_one({'to_company': company_id})
+
+    async def get_unread_user_chat(self, from_user, to_user):
+        return await self.collection.find_one({'to_user': to_user, 'from_user': from_user})
 
     async def get_messages_recieved(self, user_id):
         messages = self.collection.find({'to_user': user_id})

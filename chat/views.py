@@ -26,7 +26,6 @@ class ChatList(web.View):
         unread = UnreadMessage(self.request.app.db)
         company = Company(self.request.app.db)
         user = User(self.request.app.db, {})
-        # to_user_login = 'main'
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
@@ -37,51 +36,28 @@ class ChatList(web.View):
         users = await user.get_logins(comp['users'])
 
         messages = await message.get_messages_by_company(company_id)
-        un_mess = await unread.check_unread(company_id)
+        unr_mess = await unread.check_unread(company_id)
         unread_counter = None
-        if un_mess is not None:
-            unread_counter = un_mess['count']
+        if unr_mess is not None:
+            unread_counter = unr_mess['count']
             for mess in messages:
-                if mess['_id'] > un_mess['msg_id']:
+                if mess['_id'] > unr_mess['msg_id']:
                     mess['unread'] = True
                 mess['from_user'] = users[mess['from_user']]
         users = [{'login': y, '_id': x} for x, y in users.items()]
-        # if to_user is not None and to_user != '':
-        #     users_logins = await data['user'].get_login(to_user)
-
-        # if to_user is None or not check_chat([self_id, to_user]):
-        #     chat_name = 'main'
-        #     to_user = None
-        # else:
-        #     chat_name = create_chat_name(self_id, to_user)
-
-        # await data['unread'].delete(user_id=self_id, chat_name=chat_name)
-        # s_unread = [x['msg_id'] for x in await data['unread'].get_messages_sent(self_id)]
-
-        # message = Message(self.request.app.db)
-        # messages = await message.get_messages(chat_name)
-        # await data['unread'].clear_db()
-        # await data['user'].clear_db()
-        # await message.clear_db()
         context = {
             'self_id': self_id,
             'own_login': login,
             'messages': messages,
             'users': users,
-            # 'online': '#'.join([x[0] for x in self.request.app['online'].values()]),
-            # 'chat_name': chat_name,
-            # 'to_user': to_user,
-            # 'unread_mess': s_unread,
             'company_id': company_id,
             'unread_counter': unread_counter,
-            # 'to_user_login': to_user_login,
             'is_socket': True,
         }
         return context
 
 
 async def update_unread(request):
-    print(request)
     data = await request.json()
     login, to_user = data['login'], data['to_user']
     self_id, chat_name = data['self_id'], data['chat_name']
@@ -96,6 +72,40 @@ async def update_unread(request):
         })
     is_online = request.app['online'].get(to_user)
     return web.json_response(bool(is_online))
+
+
+class UserChat(web.View):
+    async def post(self):
+        message = Message(self.request.app.db)
+        unread = UnreadMessage(self.request.app.db)
+        user = User(self.request.app.db, {})
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        data = await self.request.json()
+        company_id = data.get('company_id')
+        if company_id:
+            company = Company(self.request.app.db)
+            comp = await company.get_company(company_id)
+            users = await user.get_logins(comp['users'])
+            messages = await message.get_messages_by_company(company_id)
+            unr_mess = await unread.check_unread(company_id)
+        else:
+            user_id = data['user_id']
+            users = await user.get_logins([self_id, user_id])
+            chat_name = create_chat_name(self_id, user_id)
+            messages = await message.get_messages(chat_name)
+            unr_mess = await unread.get_unread_user_chat(self_id, user_id)
+        if not unr_mess:
+            await unread.delete(chat_name, self_id)
+        else:
+            for mess in messages:
+                if mess['_id'] > unr_mess['msg_id']:
+                    mess['unread'] = True
+                    mess['_id'] = str(mess['_id'])
+                    mess['time'], _ = str(mess["time"].time()).split('.')
+                mess['from_user'] = users[mess['from_user']]
+        return web.json_response({'messages': messages})
+
 
 
 class CompanyWebSocket(web.View):
@@ -132,29 +142,53 @@ class CompanyWebSocket(web.View):
                     await ws.close()
 
                 else:
-                    result = await message.save(
-                        from_user=self_id,
-                        msg=data['msg'],
-                        company_id=data['company_id'],
-                    )
-                    if not await unread.check_unread(data['company_id']):
-                        r = await unread.save(
+                    if data['company_id']:
+                        result = await message.save(
                             from_user=self_id,
-                            to_company=data['company_id'],
-                            msg_id=result,
+                            msg=data['msg'],
+                            company_id=data['company_id'],
                         )
+                        if not await unread.check_unread(data['company_id']):
+                            r = await unread.save(
+                                from_user=self_id,
+                                to_company=data['company_id'],
+                                msg_id=result,
+                            )
+                        else:
+                            await unread.add_unread(data['company_id'])
                     else:
-                        await unread.add_unread(data['company_id'])
-
+                        result = await message.save(
+                                chat_name=data['chat_name'],
+                                from_user=self_id,
+                                msg=data['msg'],
+                                to_user=data['to_user']
+                            )
+                        if not await unread.get_unread_user_chat(self_id, data['to_user']):
+                            r = await unread.save(
+                                from_user=self_id,
+                                to_user=data['to_user'],
+                                msg_id=result,
+                            )
+                        else:
+                            await unread.add_unread_user_chat(self_id, data['to_user'])
                     mess = {
                         'from': login,
                         'msg': data['msg'],
                         'type': 'msg',
                         'from_id': self_id,
+                        'to_user': data['to_user'],
                         'company_id': data['company_id'],
                     }
-                    for company_ws in self.request.app['websockets'][company_id]:
-                        await company_ws.send_json(mess)
+                    if data['company_id']:
+                        for company_ws in self.request.app['websockets'][company_id]:
+                            await company_ws.send_json(mess)
+                    else:
+                        try:
+                            await self.request.app['online'][data['to_user']][1].send_json(mess)
+                        except:
+                            pass
+                        finally:
+                            await self.request.app['online'][self_id][1].send_json(mess)
 
             elif msg.type == WSMsgType.ERROR:
                 log.debug('ws connection closed with exception %s' % ws.exception())
