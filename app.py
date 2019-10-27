@@ -31,7 +31,7 @@ app = web.Application(middlewares=middle)
 aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
 
 for route in routes:
-    app.router.add_route(route[0], route[1], route[2], name=route[3])
+    app.router.add_route(*route[:3], name=route[3])
 app['static_root_url'] = '/static'
 app.router.add_static('/static', 'static', name='static')
 

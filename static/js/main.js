@@ -1,6 +1,8 @@
 $(document).ready(function(){
     var sock = {};
 
+    var unread_counter = $('#chat-data').data().unread_counter
+
     var chat_name = $('#my-data').data().name
     var to_user = $('#my-data').data().to_user
     var to_user_login = $('#my-data').data().to_user_login
@@ -17,13 +19,19 @@ $(document).ready(function(){
 
     $('.btn_chat').each(function(){
         counter[this.id] = this.value
+        console.log(online_id)
+        console.log(this.id.slice(5))
+        console.log($.inArray(this.id.slice(5), online_id) != -1)
         if (this.value > 0){
             $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-info')
             // $(`#${this.id}`).text(`${this.id.slice(4)} (${this.value})`)
         } else if ($.inArray(this.id.slice(5), online_id) != -1){
+            console.log($(`#${this.id}`))
             $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-success')
         }
     })
+    counter['main'] = $('#main_chat').val()
+
     if (typeof company_id === "undefined"){
         try{
             sock = new WebSocket('ws://' + window.location.host + '/ws?chat_name=' + chat_name);
@@ -50,30 +58,57 @@ $(document).ready(function(){
 
         try{
             var messageObj = JSON.parse(message);
-            console.log(messageObj)
+            // если пришло сообщение с текстом
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
-                messageElem.append($('<p class="unread">').html(htmlText));
-                if (messageObj.company_id != company_id){
-                    c = ++counter[`user_${messageObj.from}`]
-                    $(`#user_${messageObj.from}`).val(c)
-                    $(`#user_${messageObj.from}`).removeClass('btn-success').addClass('btn-info')
-                    $(`#user_${messageObj.from}`).text(`${messageObj.from} (${c})`)
-                } else if (messageObj.from_id != self_id){
+
+                // проверяем находимся ли мы в комнате, для которой сообщение
+                if (typeof messageObj.company_id === 'null' && messageObj.company_id == company_id){
                     c = ++counter['main']
                     $('#main_chat').val(c)
                     $('#main_chat').removeClass('btn-outline-success').addClass('btn-info')
                     $('#main_chat').text(`Общий (${c})`)
+                    messageElem.append($('<p class="unread">').html(htmlText));
+                } else if (messageObj.from_id == to_user){
+                    c = ++counter[`user_${messageObj.from_id}`]
+                    $(`#user_${messageObj.from_id}`).val(c)
+                    $(`#user_${messageObj.from_id}`).removeClass('btn-success').addClass('btn-info')
+                    $(`#user_${messageObj.from_id}`).text(`${messageObj.from} (${c})`)
+                    messageElem.append($('<p class="unread">').html(htmlText));
+                }
+                else if (messageObj.from_id == self_id) {
+
+                } else {
+                    c = ++counter[`user_${messageObj.from_id}`]
+                    $(`#user_${messageObj.from_id}`).val(c)
+                    $(`#user_${messageObj.from_id}`).removeClass('btn-success').addClass('btn-info')
+                    $(`#user_${messageObj.from_id}`).text(`${messageObj.from} (${c})`)
                 }
 
+
+            // ообщение о том, что человек вошел в онлайн
             } else if(messageObj.type == 'joined'){
-                $(`#user_${messageObj.user}`).removeClass('btn-secondary').addClass('btn-success')
+                $(`#user_${messageObj.user_id}`).removeClass('btn-secondary').addClass('btn-success')
 
+            // сообщение, что человек вышел из онлайна
             } else if(messageObj.type == 'left'){
-                $(`#user_${messageObj.user}`).removeClass('btn-success').addClass('btn-secondary')
+                $(`#user_${messageObj.user_id}`).removeClass('btn-success').addClass('btn-secondary')
 
+            // сообщение, что человек прочел сообщение
             } else if(messageObj.type == 'read'){
-                $('.unread').removeClass('unread')
+                if (messageObj.company_id == company_id){
+                    counter['main'] = 0
+                    $('#main_chat').val(0)
+                    $('#main_chat').removeClass('btn-info').addClass('btn-outline-success')
+                    $('#main_chat').text(`Общий`)
+                    $('.unread').removeClass('unread')
+                } else if (messageObj.user_id == to_user){
+                    counter[`user_${to_user}`] = 0
+                    $(`#user_${to_user}`).val(0)
+                    $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-success')
+                    $(`#user_${to_user}`).text(to_user_login)
+                    $('.unread').removeClass('unread')
+                }
             }
         } catch (e){
             console.log(e)
@@ -95,12 +130,11 @@ $(document).ready(function(){
     }
 
     function updateUnread(){
-        if (counter[`user_${to_user_login}`] > 0 || counter[chat_name] > 0){
+        if (counter[`user_${to_user}`] > 0
+                || (counter['main'] > 0 && company_id)){
             data = {
-                'login': own_login,
-                'self_id': self_id,
-                'chat_name': chat_name,
-                'to_user': to_user,
+                'from_user': to_user,
+                'company_id': company_id,
             }
             setTimeout(function(){
                 $.ajax({
@@ -110,12 +144,13 @@ $(document).ready(function(){
                     data: JSON.stringify(data),
                     success: function(data) {
                         if (data){
-                            $(`#user_${to_user_login}`).removeClass('btn-info').addClass('btn-success')
+                            $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-success')
                         } else {
-                            $(`#user_${to_user_login}`).removeClass('btn-info').addClass('btn-secondary')
+                            $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-secondary')
                         }
-                        $(`#user_${to_user_login}`).text(to_user_login)
-                        counter[`user_${to_user_login}`] = 0
+                        $(`#user_${to_user}`).text(to_user_login)
+                        counter[`user_${to_user}`] = 0
+                        $('.unread').removeClass('unread')
                     }
                 });
             }, 200)
@@ -150,8 +185,8 @@ $(document).ready(function(){
     });
 
     $('.btn_chat').click(function(){
-        let user_id = this.value
-        let user_login = this.id.slice(5)
+        let user_id = this.id.slice(5)
+        let user_login = this.name
         data = {
             'user_id': user_id
         }
@@ -163,16 +198,24 @@ $(document).ready(function(){
             success: function(data) {
                 result = ''
                 to_user = user_id
-                chat_name = chat_name
+                chat_name = data['chat_name']
                 to_user_login = user_login
                 messages = data.messages
                 company_id = null
                 for (mess of messages){
-                    cls = mess['unread'] ? '' : 'unread'
-                    let html_p = `<p class=${cls}>[${mess['time']}]${mess['from_user']}:${mess['msg']}</p>`
+                    cls = mess['unread'] ? 'unread' : ''
+                    let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
                     result += html_p
                 }
                 $('#subscribe').html(result)
+                $(`#user_${user_id}`).text(user_login)
+                $('#chat_with').text(`Чат с ${user_login}`)
+                counter[`user_${user_id}`] = 0
+                if (data['is_online']){
+                    $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-success')
+                } else {
+                    $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-secondary')
+                }
             }
         });
     });
@@ -183,11 +226,10 @@ $(document).ready(function(){
         }
         $.ajax({
             dataType: 'json',
-            url: '/user_chat',
+            url: '/user_chat_company',
             type: 'POST',
             data: JSON.stringify(data),
             success: function(data) {
-                console.log(data)
                 result = ''
                 to_user = ''
                 chat_name = ''
@@ -196,12 +238,12 @@ $(document).ready(function(){
 
                 messages = data.messages
                 for (mess of messages){
-                    console.log(mess)
-                    cls = mess['unread'] ? '' : 'unread'
-                    let html_p = `<p class=${cls}>[${mess['time']}]${mess['from_user']}:${mess['msg']}</p>`
+                    cls = mess['unread'] ? 'unread' : ''
+                    let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
                     result += html_p
                 }
                 $('#subscribe').html(result)
+                $('#chat_with').text('Общий чат')
             }
         });
     });
