@@ -58,15 +58,16 @@ $(document).ready(function(){
 
         try{
             var messageObj = JSON.parse(message);
+            console.log(messageObj)
             // если пришло сообщение с текстом
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
 
                 // проверяем находимся ли мы в комнате, для которой сообщение
-                if (typeof messageObj.company_id === 'null' && messageObj.company_id == company_id){
+                if (typeof messageObj.company_id !== 'null' && messageObj.company_id == company_id){
                     c = ++counter['main']
                     $('#main_chat').val(c)
-                    $('#main_chat').removeClass('btn-outline-success').addClass('btn-info')
+                    $('#main_chat').removeClass('btn-outline-success').addClass('btn-outline-info')
                     $('#main_chat').text(`Общий (${c})`)
                     messageElem.append($('<p class="unread">').html(htmlText));
                 } else if (messageObj.from_id == to_user){
@@ -150,6 +151,7 @@ $(document).ready(function(){
                         }
                         $(`#user_${to_user}`).text(to_user_login)
                         counter[`user_${to_user}`] = 0
+                        console.log(1)
                         $('.unread').removeClass('unread')
                     }
                 });

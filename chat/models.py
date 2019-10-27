@@ -97,7 +97,7 @@ class UnreadMessage():
         })
         return result
 
-    async def save_for_company(self, from_user, msg_id, to_company, **kw):
+    async def save_for_company(self, from_user, to_user, msg_id, to_company, **kw):
         """
         Сохранить сообщение общего чата в базе
 
@@ -110,6 +110,7 @@ class UnreadMessage():
             'from_user': from_user,
             'msg_id': msg_id,
             'to_company': to_company,
+            'to_user': to_user,
             'count': 1
         })
         return result
@@ -161,14 +162,14 @@ class UnreadMessage():
         result = {x['from_user']: x['count'] for x in messages}
         return result
 
-    async def check_unread(self, company_id):
+    async def check_unread(self, company_id, to_user):
         """
         проверка, есть ли непрочитанные сообщения внутри общего чата компании
 
         Args:
             company_id - ID компании
         """
-        return await self.collection.find_one({'to_company': company_id})
+        return await self.collection.find_one({'to_company': company_id, 'to_user': to_user})
 
     async def get_unread_user_chat(self, from_user, to_user):
         """
@@ -200,14 +201,14 @@ class UnreadMessage():
         """
         await self.collection.delete_many({'to_user': user_id, 'from_user': from_user})
 
-    async def delete_by_company(self, company_id):
+    async def delete_by_company(self, company_id, user_id):
         """
         удалить запись - сообщения в общем чате прочитаны
 
         Args:
             company_id - ID компании
         """
-        await self.collection.delete_many({'to_company': company_id})
+        await self.collection.delete_many({'to_company': company_id, 'to_user': user_id})
 
     async def clear_db(self):
         await self.collection.drop()

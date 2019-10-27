@@ -39,7 +39,7 @@ class ChatList(web.View):
         users = await user.get_logins(comp['users'])
 
         messages = await message.get_messages_by_company(company_id)
-        unr_mess = await unread.check_unread(company_id)
+        unr_mess = await unread.check_unread(company_id, self_id)
         unread_counter = collections.defaultdict(int)
         if unr_mess is not None:
             unread_counter['main_chat'] = unr_mess['count']
@@ -48,6 +48,8 @@ class ChatList(web.View):
                 mess['unread'] = True
             mess['from_user'] = users[mess['from_user']]
         unread_counter.update(await unread.count_unread(self_id))
+        await unread.delete_by_company(company_id, self_id)
+
         users = [{'login': y, '_id': x} for x, y in users.items()]
         online = [str(x[0]) for x in self.request.app['online'].values()]
         online.append(self_id)
@@ -74,7 +76,7 @@ async def update_unread_company(request):
     self_id = session.get('user')
     login = session.get('login')
     unread = UnreadMessage(request.app.db)
-    await unread.delete_by_company(data['company_id'])
+    await unread.delete_by_company(data['company_id'], self_id)
     for _ws in request.app['websockets'][data['company_id']]:
         await _ws.send_json({
             'user_id': self_id,
@@ -119,9 +121,9 @@ class UserChatCompany(web.View):
         comp = await company.get_company(company_id)
         users = await user.get_logins(comp['users'])
         messages = await message.get_messages_by_company(company_id)
-        unr_mess = await unread.check_unread(company_id)
+        unr_mess = await unread.check_unread(company_id, self_id)
         if unr_mess is not None and self_id != unr_mess['from_user']:
-            await unread.delete_by_company(company_id)
+            await unread.delete_by_company(company_id, self_id)
         for mess in messages:
             if unr_mess is not None and self_id == unr_mess['from_user'] and mess['_id'] >= unr_mess['msg_id']:
                 mess['unread'] = True
@@ -155,7 +157,7 @@ class UserChat(web.View):
             mess['from_user'] = users[mess['from_user']]
         try:
             await self.request.app['online'][user_id][1].send_json({'type': 'read', 'user_id': self_id})
-        except:
+        except KeyError:
             is_online = False
         else:
             is_online = True
@@ -202,19 +204,24 @@ class CompanyWebSocket(web.View):
                 else:
                     if data['company_id']:
                         comp = await company.get_company(data['company_id'])
+
                         result = await message.save_for_company(
                             from_user=self_id,
                             msg=data['msg'],
                             company_id=data['company_id'],
                         )
-                        if not await unread.check_unread(data['company_id']):
-                            r = await unread.save_for_company(
-                                from_user=self_id,
-                                to_company=data['company_id'],
-                                msg_id=result,
-                            )
-                        else:
-                            await unread.add_unread(data['company_id'])
+                        for u in comp['users']:
+                            if u == self_id:
+                                continue
+                            if not await unread.check_unread(data['company_id'], self_id):
+                                r = await unread.save_for_company(
+                                    from_user=self_id,
+                                    to_user=u,
+                                    to_company=data['company_id'],
+                                    msg_id=result,
+                                )
+                            else:
+                                await unread.add_unread(data['company_id'])
                     else:
                         result = await message.save(
                                 chat_name=data['chat_name'],
