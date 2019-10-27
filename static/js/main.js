@@ -59,18 +59,21 @@ $(document).ready(function(){
         try{
             var messageObj = JSON.parse(message);
             console.log(messageObj)
+            console.log(chat_name)
             // если пришло сообщение с текстом
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
 
                 // проверяем находимся ли мы в комнате, для которой сообщение
-                if (typeof messageObj.company_id !== 'null' && messageObj.company_id == company_id){
+                if (typeof company_id !== 'null' && messageObj.company_id == company_id){
+                    console.log(3)
                     c = ++counter['main']
                     $('#main_chat').val(c)
                     $('#main_chat').removeClass('btn-outline-success').addClass('btn-outline-info')
                     $('#main_chat').text(`Общий (${c})`)
                     messageElem.append($('<p class="unread">').html(htmlText));
-                } else if (messageObj.from_id == to_user){
+                } else if (messageObj.from_id == to_user && chat_name == messageObj.chat_name){
+                    console.log(4)
                     c = ++counter[`user_${messageObj.from_id}`]
                     $(`#user_${messageObj.from_id}`).val(c)
                     $(`#user_${messageObj.from_id}`).removeClass('btn-success').addClass('btn-info')
@@ -131,11 +134,9 @@ $(document).ready(function(){
     }
 
     function updateUnread(){
-        if (counter[`user_${to_user}`] > 0
-                || (counter['main'] > 0 && company_id)){
+        if (counter[`user_${to_user}`] > 0){
             data = {
                 'from_user': to_user,
-                'company_id': company_id,
             }
             setTimeout(function(){
                 $.ajax({
@@ -151,6 +152,28 @@ $(document).ready(function(){
                         }
                         $(`#user_${to_user}`).text(to_user_login)
                         counter[`user_${to_user}`] = 0
+                        $('.unread').removeClass('unread')
+                    }
+                });
+            }, 200)
+        }
+    }
+
+    function updateUnreadInCompany(){
+        if (counter['main'] > 0 && company_id){
+            data = {
+                'company_id': company_id,
+            }
+            setTimeout(function(){
+                $.ajax({
+                    dataType: 'json',
+                    url: '/update_unread_company',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    success: function(data) {
+                        $(`#main_chat`).removeClass('btn-outline-info').addClass('btn-outline-success')
+                        $(`#main_chat`).text('Общий')
+                        counter['main'] = 0
                         console.log(1)
                         $('.unread').removeClass('unread')
                     }
@@ -162,7 +185,7 @@ $(document).ready(function(){
     sock.onopen = function(){
         console.log('Connection to server started');
         $("#messages_box").hover(() =>{
-            updateUnread()
+            updateUnreadInCompany()
         });
     };
 
@@ -218,6 +241,9 @@ $(document).ready(function(){
                 } else {
                     $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-secondary')
                 }
+                $("#messages_box").hover(() =>{
+                    updateUnread()
+                });
             }
         });
     });
@@ -246,6 +272,9 @@ $(document).ready(function(){
                 }
                 $('#subscribe').html(result)
                 $('#chat_with').text('Общий чат')
+                $("#messages_box").hover(() =>{
+                    updateUnreadInCompany()
+                });
             }
         });
     });

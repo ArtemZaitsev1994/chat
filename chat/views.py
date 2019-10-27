@@ -84,7 +84,6 @@ async def update_unread_company(request):
             'type': 'read',
             'company_id': data['company_id']
         })
-    # is_online = request.app['online'].get(to_user)
     return web.json_response(True)
 
 async def update_unread(request):
@@ -100,10 +99,11 @@ async def update_unread(request):
     await unread.delete(self_id, data['from_user'])
     try:
         await request.app['online'][data['from_user']][1].send_json({'type': 'read', 'user_id': self_id})
-    except:
-        pass
-    # is_online = request.app['online'].get(to_user)
-    return web.json_response(True)
+    except KeyError:
+        is_online = False
+    else:
+        is_online = True
+    return web.json_response(is_online)
 
 
 class UserChatCompany(web.View):
@@ -244,6 +244,7 @@ class CompanyWebSocket(web.View):
                         'from_id': self_id,
                         'to_user': data['to_user'],
                         'company_id': data['company_id'],
+                        'chat_name': data.get('chat_name')
                     }
                     if data['company_id']:
                         # отправляем сообщения всем юзерам входящим в эту компанию
