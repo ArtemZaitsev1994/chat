@@ -12,6 +12,7 @@
         data-own_login="{{own_login}}"
         data-self_id="{{self_id}}"
         data-online_id="{{online}}"
+        data-last_mess_author="{{last_mess_author}}"
     >
     <title>
         {% block title %}
@@ -63,7 +64,8 @@
     {% endblock %}
 </body>
 <footer>
-    {% if is_socket %}<script src="{{ static('js/main.js') }}"></script>{% endif %}
+  <!-- <script src="{{ static('js/common_websocket.js') }}"></script> -->
+  <script src="{{ static('js/main.js') }}"></script>
     {% block footer %}
     {% endblock %}
 </footer>

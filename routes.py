@@ -1,7 +1,7 @@
 from chat.views import (
     ChatList, CompanyWebSocket, main_redirect,
     update_unread, UserChat, UserChatCompany,
-    update_unread_company,
+    update_unread_company, CommonWebSocket
 )
 from auth.views import Login, SignIn, SignOut, AccountDetails
 from about.views import About, drop_all
@@ -12,6 +12,7 @@ routes = [
     ('GET',  '/',           main_redirect,    'main_redirect'),
     ('GET',  '/chat',       ChatList,         'chat_list'),
     ('GET',  '/ws_company', CompanyWebSocket, 'chat'),
+    ('GET',  '/ws_common',  CommonWebSocket,  'common_websocket'),
     ('POST', '/update',     update_unread,    'update'),
     ('POST', '/user_chat',  UserChat,         'user_chat'),
     ('POST', '/user_chat_company',  UserChatCompany,  'user_chat_company'),

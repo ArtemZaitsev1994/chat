@@ -11,7 +11,9 @@ $(document).ready(function(){
     var online_id = $('#my-data').data().online_id.split('#')
     var company_id = $('#my-data').data().company_id
     var c_id = company_id
-    
+    var last_mess_author = $('#my-data').data().last_mess_author
+    console.log(last_mess_author)
+    console.log(self_id)
 
     var counter = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
@@ -19,9 +21,6 @@ $(document).ready(function(){
 
     $('.btn_chat').each(function(){
         counter[this.id] = this.value
-        console.log(online_id)
-        console.log(this.id.slice(5))
-        console.log($.inArray(this.id.slice(5), online_id) != -1)
         if (this.value > 0){
             $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-info')
             // $(`#${this.id}`).text(`${this.id.slice(4)} (${this.value})`)
@@ -64,30 +63,41 @@ $(document).ready(function(){
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
 
-                // проверяем находимся ли мы в комнате, для которой сообщение
+                // проверяем находимся ли мы в комнате общего чата, для которой сообщение
                 if (typeof company_id !== 'null' && messageObj.company_id == company_id){
-                    console.log(3)
+                    console.log(1)
+                    if (self_id != messageObj.from_id){
+                        c = ++counter['main']
+                        $('#main_chat').val(c)
+                        $('#main_chat').removeClass('btn-outline-success').addClass('btn-outline-info')
+                        $('#main_chat').text(`Общий (${c})`)
+                    }
+                    messageElem.append($('<p class="unread">').html(htmlText));
+                // если сообщение из общего чата, но мы в другой комнате
+                } else if (typeof company_id !== 'null') {
+                    console.log(2)
                     c = ++counter['main']
                     $('#main_chat').val(c)
                     $('#main_chat').removeClass('btn-outline-success').addClass('btn-outline-info')
                     $('#main_chat').text(`Общий (${c})`)
-                    messageElem.append($('<p class="unread">').html(htmlText));
+                // если сообщение из приватного чата и мы находимся с ним в чате
                 } else if (messageObj.from_id == to_user && chat_name == messageObj.chat_name){
+                    console.log(3)
+                    c = ++counter[`user_${messageObj.from_id}`]
+                    $(`#user_${messageObj.from_id}`).val(c)
+                    $(`#user_${messageObj.from_id}`).removeClass('btn-success').addClass('btn-info')
+                    $(`#user_${messageObj.from_id}`).text(`${messageObj.from} (${c})`)
+                    messageElem.append($('<p class="unread">').html(htmlText));
+                // сообщение из приватного чата и мы не с ним в комнате
+                } else {
                     console.log(4)
                     c = ++counter[`user_${messageObj.from_id}`]
                     $(`#user_${messageObj.from_id}`).val(c)
                     $(`#user_${messageObj.from_id}`).removeClass('btn-success').addClass('btn-info')
                     $(`#user_${messageObj.from_id}`).text(`${messageObj.from} (${c})`)
-                    messageElem.append($('<p class="unread">').html(htmlText));
                 }
-                else if (messageObj.from_id == self_id) {
 
-                } else {
-                    c = ++counter[`user_${messageObj.from_id}`]
-                    $(`#user_${messageObj.from_id}`).val(c)
-                    $(`#user_${messageObj.from_id}`).removeClass('btn-success').addClass('btn-info')
-                    $(`#user_${messageObj.from_id}`).text(`${messageObj.from} (${c})`)
-                }
+                last_mess_author = messageObj.from_id
 
 
             // ообщение о том, что человек вошел в онлайн
@@ -160,7 +170,7 @@ $(document).ready(function(){
     }
 
     function updateUnreadInCompany(){
-        if (counter['main'] > 0 && company_id){
+        if (counter['main'] > 0 && company_id && last_mess_author != self_id){
             data = {
                 'company_id': company_id,
             }
@@ -174,7 +184,6 @@ $(document).ready(function(){
                         $(`#main_chat`).removeClass('btn-outline-info').addClass('btn-outline-success')
                         $(`#main_chat`).text('Общий')
                         counter['main'] = 0
-                        console.log(1)
                         $('.unread').removeClass('unread')
                     }
                 });
@@ -227,6 +236,7 @@ $(document).ready(function(){
                 to_user_login = user_login
                 messages = data.messages
                 company_id = null
+                last_mess_author = data.last_mess_author
                 for (mess of messages){
                     cls = mess['unread'] ? 'unread' : ''
                     let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
@@ -265,6 +275,7 @@ $(document).ready(function(){
                 company_id = c_id
 
                 messages = data.messages
+                last_mess_author = data.last_mess_author
                 for (mess of messages){
                     cls = mess['unread'] ? 'unread' : ''
                     let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
