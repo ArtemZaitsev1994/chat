@@ -12,14 +12,28 @@ from routes import routes
 from middlewares import authorize
 from motor import motor_asyncio as ma
 from settings import *
+from auth.models import User
+from company.models import Company
+from chat.models import UnreadMessage, Message
+from events.models import Event, Photo
 
 
 basedir = os.path.dirname(os.path.realpath(__file__))
 photo_dir = os.path.join(basedir, 'static/photo/')
 
 async def on_shutdown(app):
-    for ws in app['websockets']:
-        await ws.close(code=1001, mesage='Server shutdown')
+    for room in app['websockets']:
+        [await ws.close(code=1001, mesage='Server shutdown') for ws in room]
+
+async def create_models(app):
+    app['models'].update({
+        'user': User(app.db, {}),
+        'unread': UnreadMessage(app.db),
+        'message': Message(app.db),
+        'company': Company(app.db),
+        'event': Event(app.db),
+        'photo': Photo(app.db)
+    })
 
 middle = [
     session_middleware(EncryptedCookieStorage(hashlib.sha256(bytes(SECRET_KEY, 'utf-8')).digest())),
@@ -41,6 +55,8 @@ app.db = app.client[MONGO_DB_NAME]
 app.on_cleanup.append(on_shutdown)
 app['websockets'] = collections.defaultdict(list)
 app['online'] = {}
+app['models'] = {}
 app['photo_dir'] = photo_dir
+app.on_startup.append(create_models)
 
 web.run_app(app)

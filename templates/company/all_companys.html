@@ -20,8 +20,7 @@
                         <button 
                             type="button" 
                             class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
-                            id="user_{{comp.name}}" 
-                            value="{{unread_counter[comp.name]}}">
+                            id="user_{{comp.name}}">
                                 {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
                         </button>
                 </a>

@@ -3,9 +3,8 @@ import collections
 from aiohttp import web
 from aiohttp_session import get_session
 
-from auth.models import User
-from chat.models import UnreadMessage
 from utils import get_context
+from auth.models import User
 
 
 class About(web.View):
@@ -27,18 +26,14 @@ class About(web.View):
 
 
 async def drop_all(request):
-    from auth.models import User
-    from chat.models import Message, UnreadMessage
-    from company.models import Company
-    from events.models import Event, Photo
 
     models = {
-        'user': User(request.app.db, {}),
-        'chat': Message(request.app.db),
-        'unread': UnreadMessage(request.app.db),
-        'event': Event(request.app.db),
-        'company': Company(request.app.db),
-        'photo': Photo(request.app.db),
+        'user': request.app['models']['user'],
+        'chat': request.app['models']['message'],
+        'unread': request.app['models']['unread'],
+        'event': request.app['models']['event'],
+        'company': request.app['models']['company'],
+        'photo': request.app['models']['photo'],
     }
     [await i.clear_db() for i in models.values()]
 

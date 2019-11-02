@@ -12,8 +12,6 @@ $(document).ready(function(){
     var company_id = $('#my-data').data().company_id
     var c_id = company_id
     var last_mess_author = $('#my-data').data().last_mess_author
-    console.log(last_mess_author)
-    console.log(self_id)
 
     var counter = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
@@ -58,7 +56,6 @@ $(document).ready(function(){
         try{
             var messageObj = JSON.parse(message);
             console.log(messageObj)
-            console.log(chat_name)
             // если пришло сообщение с текстом
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
@@ -116,11 +113,13 @@ $(document).ready(function(){
                     $('#main_chat').removeClass('btn-info').addClass('btn-outline-success')
                     $('#main_chat').text(`Общий`)
                     $('.unread').removeClass('unread')
-                } else if (messageObj.user_id == to_user){
-                    counter[`user_${to_user}`] = 0
-                    $(`#user_${to_user}`).val(0)
-                    $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-success')
-                    $(`#user_${to_user}`).text(to_user_login)
+                // } else if (messageObj.user_id == to_user){
+                //     counter[`user_${to_user}`] = 0
+                //     $(`#user_${to_user}`).val(0)
+                //     $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-success')
+                //     $(`#user_${to_user}`).text(to_user_login)
+                //     $('.unread').removeClass('unread')
+                } else if (last_mess_author == self_id) {
                     $('.unread').removeClass('unread')
                 }
             }
@@ -134,6 +133,7 @@ $(document).ready(function(){
     function sendMessage(){
         var msg = $('#message');
         sock.send(JSON.stringify({
+            'from_client': true,
             'msg': msg.val(),
             'chat_name': chat_name,
             'to_user': to_user,
@@ -165,7 +165,7 @@ $(document).ready(function(){
                         $('.unread').removeClass('unread')
                     }
                 });
-            }, 200)
+            }, 2000)
         }
     }
 

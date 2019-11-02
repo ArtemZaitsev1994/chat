@@ -2,15 +2,12 @@ import json
 import collections
 import os
 import aiohttp_jinja2
+
 from datetime import datetime
 from bson.objectid import ObjectId
 from aiohttp import web
 from aiohttp_session import get_session
 
-from auth.models import User
-from events.models import Event as event_model
-from events.models import Photo as photo_model
-from company.models import Company
 from utils import get_context, get_companys_context
 
 
@@ -18,10 +15,9 @@ from utils import get_context, get_companys_context
 class Event(web.View):
 
     @aiohttp_jinja2.template('events/event.html')
-    @get_companys_context
-    async def get(self, data):
-        event = event_model(self.request.app.db)
-        data.update({'is_socket': False})
+    async def get(self):
+        event = self.request.app['models']['event']
+        data = {'is_socket': False}
         session = await get_session(self.request)
         login = session.get('login')
 
@@ -30,7 +26,7 @@ class Event(web.View):
         return data
 
     async def post(self, **kw):
-        event = event_model(self.request.app.db)
+        event = self.request.app['models']['event']
 
         data = await self.request.json()
         session = await get_session(self.request)
@@ -43,7 +39,7 @@ class Event(web.View):
         data = await self.request.json()
         session = await get_session(self.request)
         self_id = session.get('user')
-        event = event_model(self.request.app.db)
+        event = self.request.app['models']['event']
         if (await event.get_event(data['event_id']))['admin_id'] == self_id:
             result = await event.delete(data['event_id'])
             return web.json_response(True)
@@ -53,9 +49,8 @@ class Event(web.View):
 class CompEventList(web.View):
 
     @aiohttp_jinja2.template('events/comp_event_list.html')
-    @get_companys_context
-    async def get(self, data):
-        event = event_model(self.request.app.db)
+    async def get(self):
+        event = self.request.app['models']['event']
         company_id = self.request.rel_url.query.get('id')
         session = await get_session(self.request)
         login = session.get('login')
@@ -67,10 +62,9 @@ class CompEventList(web.View):
 class CompEvent(web.View):
 
     @aiohttp_jinja2.template('events/comp_event.html')
-    @get_companys_context
-    async def get(self, data):
-        company = Company(self.request.app.db)
-        event = event_model(self.request.app.db)
+    async def get(self):
+        company = self.request.app['models']['company']
+        event = self.request.app['models']['event']
         event_id = self.request.rel_url.query.get('id')
         session = await get_session(self.request)
         login = session.get('login')
@@ -92,10 +86,10 @@ class Photo(web.View):
         if data['photo'] == b'':
             return web.HTTPFound('/comp_event')
 
-        event = event_model(self.request.app.db)
+        event = self.request.app['models']['event']
         e = await event.get_event(data['event_id'])
 
-        photo = photo_model(self.request.app.db)
+        photo = self.request.app['models']['photo']
         filename = str(await photo.create_photo(data['event_id']))
         filename = f'{filename}.{data["photo"].filename.split(".")[-1]}'
         input_file = data['photo'].file

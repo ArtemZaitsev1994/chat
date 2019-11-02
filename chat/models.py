@@ -97,7 +97,7 @@ class UnreadMessage():
         })
         return result
 
-    async def save_for_company(self, from_user, to_user, msg_id, to_company, **kw):
+    async def save_for_company(self, to_user, msg_id, to_company, **kw):
         """
         Сохранить сообщение общего чата в базе
 
@@ -107,7 +107,7 @@ class UnreadMessage():
             to_company - ID компании
         """
         result = await self.collection.insert({
-            'from_user': from_user,
+            # 'from_user': from_user,
             'msg_id': msg_id,
             'to_company': to_company,
             'to_user': to_user,
@@ -124,7 +124,7 @@ class UnreadMessage():
         """
         return await self.collection.find_one({'_id': _id})
 
-    async def add_unread(self, _id):
+    async def add_unread(self, _id, user_id):
         """
         увеличить счетчик непрочитанных сообщений внутри одной комнаты
 
@@ -132,7 +132,7 @@ class UnreadMessage():
             _id - ID записи в базе
         """
         result = await self.collection.update(
-            {'to_company': _id},
+            {'to_company': _id, 'to_user': user_id},
             {'$inc': {'count': 1}}
         )
         return result
@@ -151,16 +151,16 @@ class UnreadMessage():
         )
         return result
 
-    async def count_unread(self, to_user):
+    async def count_unread(self, to_user, to_company):
         """
         увеличить счетчик непрочитанных сообщений внутри одной комнаты
 
         Args:
             to_user - ID пользователя которому сообщение
         """
-        messages = await self.collection.find({'to_user': to_user}).to_list(length=None)
-        result = {x['from_user']: x['count'] for x in messages}
-        return result
+        messages = await self.collection.find({'to_user': to_user, 'to_company': to_company}).to_list(length=None)
+        # result = {x['from_user']: x['count'] for x in messages}
+        return messages['count']
 
     async def check_unread(self, company_id, to_user):
         """
@@ -191,15 +191,15 @@ class UnreadMessage():
         messages = self.collection.find({'from_user': user_id})
         return await messages.to_list(length=None)
 
-    async def delete(self, user_id, from_user):
-        """
-        удалить запись - ползователь прочитал сообщения
+    # async def delete(self, user_id, from_user):
+    #     """
+    #     удалить запись - ползователь прочитал сообщения
 
-        Args:
-            user_id - ID пользователя, который прочитал сообщения
-            from_user - ID пользователя, чьи сообщения прочитали
-        """
-        await self.collection.delete_many({'to_user': user_id, 'from_user': from_user})
+    #     Args:
+    #         user_id - ID пользователя, который прочитал сообщения
+    #         from_user - ID пользователя, чьи сообщения прочитали
+    #     """
+    #     await self.collection.delete_many({'to_user': user_id, 'from_user': from_user})
 
     async def delete_by_company(self, company_id, user_id):
         """
@@ -208,7 +208,26 @@ class UnreadMessage():
         Args:
             company_id - ID компании
         """
-        await self.collection.delete_many({'to_company': company_id, 'to_user': user_id})
+        result = await self.collection.update(
+            {'to_company': company_id, 'to_user': user_id},
+            {'count': 0}
+        )
+        return result
+
+    async def find_last_unread(self, company_id, self_id):
+        """
+        Ищем хотя бы одним юзером прочитанные сообщения
+
+        Args:
+            company_id: ID компании
+            user_id: ID юзера отправителя
+        """
+        if not await self.collection.find_one({'to_company': company_id, 'count': 0}):
+            mess = await self.collection.find({'to_company': company_id}).sort([('count', 1)]).to_list(length=None)
+
+            if len(mess) > 0:
+                return mess[0]['count']
+        return 0
 
     async def clear_db(self):
         await self.collection.drop()
@@ -221,5 +240,3 @@ class UnreadMessage():
                 'to_user': user_id,
             }).to_list(length=None))
         return result
-
-

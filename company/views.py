@@ -6,8 +6,6 @@ from bson.objectid import ObjectId
 from aiohttp import web
 from aiohttp_session import get_session
 
-from auth.models import User
-from company.models import Company as comp_model
 from utils import get_context, get_companys_context
 from auth.utils import redirect, set_session, convert_json
 
@@ -15,15 +13,14 @@ from auth.utils import redirect, set_session, convert_json
 class MyCompany(web.View):
 
     @aiohttp_jinja2.template('company/my_companys.html')
-    @get_companys_context
-    async def get(self, data):
+    async def get(self):
         session = await get_session(self.request)
         login = session.get('login')
-        data.update({'is_socket': False, 'own_login': login})
+        data = {'is_socket': False, 'own_login': login}
         return data
 
     async def post(self, **kw):
-        company = comp_model(self.request.app.db)
+        company = self.request.app['models']['company']
 
         data = await self.request.json()
         session = await get_session(self.request)
@@ -37,8 +34,8 @@ class MyCompany(web.View):
         data = await self.request.json()
         session = await get_session(self.request)
         self_id = session.get('user')
-        company = comp_model(self.request.app.db)
-        user = User(self.request.app.db, {})
+        company = self.request.app['models']['company']
+        user = self.request.app['models']['user']
 
         result = await company.delete_user_from_comp(data['company_id'], self_id)
         if result:
@@ -50,12 +47,11 @@ class MyCompany(web.View):
 class AllCompanys(web.View):
 
     @aiohttp_jinja2.template('company/all_companys.html')
-    @get_companys_context
-    async def get(self, data):
+    async def get(self):
         session = await get_session(self.request)
         login = session.get('login')
-        data.update({'is_socket': False})
-        company = comp_model(self.request.app.db)
+        data = {'is_socket': False}
+        company = self.request.app['models']['company']
         # await company.clear_db()
 
         data['companys'] = await company.get_all_comp()
@@ -66,10 +62,10 @@ class AllCompanys(web.View):
 class Company(web.View):
 
     @aiohttp_jinja2.template('/company/company.html')
-    @get_companys_context
-    async def get(self, data, **kw):
-        data.update({'is_socket': False})
-        company = comp_model(self.request.app.db)
+    async def get(self, **kw):
+        data = {'is_socket': False}
+        company = self.request.app['models']['company']
+        unread = self.request.app['models']['unread']
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
@@ -82,14 +78,17 @@ class Company(web.View):
         data['is_admin'] = self_id == data['company']['admin_id']
         data['own_login'] = login
 
+        unr_mess = await unread.check_unread(company_id, self_id)
+        data['unread'] = unr_mess['count'] if unr_mess else 0
+
         return data
 
     async def post(self, **kw):
         data = await self.request.json()
         session = await get_session(self.request)
         self_id = session.get('user')
-        company = comp_model(self.request.app.db)
-        user = User(self.request.app.db, {})
+        company = self.request.app['models']['company']
+        user = self.request.app['models']['user']
 
         comp = await company.get_company(data['company_id'])
         if comp['private'] and comp['password'] != data['password']:
@@ -99,7 +98,7 @@ class Company(web.View):
             return web.json_response(True)
 
     async def delete(self, **kw):
-        company = comp_model(self.request.app.db)
+        company = self.request.app['models']['company']
 
         data = await self.request.json()
         session = await get_session(self.request)
@@ -113,7 +112,7 @@ async def check_access_to_company(request):
     data = await request.json()
     session = await get_session(request)
     self_id = session.get('user')
-    company = comp_model(request.app.db)
+    company = request.app['models']['company']
     comp = await company.get_company(data['id'])
     access = next((x for x in comp['users'] if x[1] == self_id), None)
     if not access:

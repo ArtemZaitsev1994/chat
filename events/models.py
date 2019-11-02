@@ -89,12 +89,6 @@ class Photo:
         })
         return result
 
-    async def get_events_by_comp(self, company_id, **kw):
-        events = await self.collection.find({'company_id': company_id}).to_list(length=None)
-        for e in events:
-            e['_id'] = str(e['_id'])
-        return events
-
     async def delete(self, comp_id):
         result = await self.collection.delete_many({'_id': ObjectId(comp_id)})
         return result
