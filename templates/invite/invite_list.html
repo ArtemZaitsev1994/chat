@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h4>
+    Хотят вступить.
+    </h4>
+    <a href="{{ '/event?id=%s'%company_id|urlencode }}">
+        <input class="btn btn-primary" title="Создать ивент" type="button" value="Создать ивент">
+    </a>
+    {% for inv in invites %}
+    <div class="row" >
+        <div class="col-1"></div> 
+        <div class="col-8">
+            <a href="#" class='row'>
+                <div class="col-3 pic"></div>
+                <div class="col-5">
+                    <div class="col">{{inv.login}}</div>
+                    {% if inv.note %}
+                        <div class="col">Записка: {{inv.note}}</div>
+                    {% endif %}
+                </div>
+            </a>
+                <input class="btn btn-primary" id='accept' title="Создать ивент" type="button" value="Принять">
+                <input class="btn btn-primary" id='decline' title="Создать ивент" type="button" value="Отклонить">
+        </div>    
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+<script src="{{ static('js/event.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
+
+{% block footer %}
+{% endblock %}

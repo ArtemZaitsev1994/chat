@@ -77,4 +77,45 @@ $(document).ready(function(){
         });
 
     })
+    $('#invitation').on('click', () => {
+        data = {
+            'company_id': company_id,
+            'note': $('#note').val()
+        }
+
+        $.ajax({
+            dataType: 'json',
+            url: '/invite',
+            type: 'POST',
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data){
+                     $('#invite').html('<p style="colore:green">Запрос отправлен</p>');
+                } else {
+                    showError('Ошибка на стороне сервера')
+                }
+            }
+        });
+
+    })
+    $('#delete_inv').on('click', () => {
+        data = {
+            'company_id': company_id
+        }
+
+        $.ajax({
+            dataType: 'json',
+            url: '/invite',
+            type: 'POST',
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data){
+                     $('#invite').html('<p style="colore:green">Запрос отправлен</p>');
+                } else {
+                    showError('Ошибка на стороне сервера')
+                }
+            }
+        });
+
+    })
 });

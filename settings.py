@@ -24,7 +24,8 @@ MONGO_HOST = os.getenv('MONGODB_URI')
 MONGO_DB_NAME = env.str('MONGO_DB_NAME')
 
 MESSAGE_COLLECTION = 'messages'
-USER_COLLECTION = 'users'
-UNREAD_COLLECTION = 'unread_message'
+USER_COLLECTION    = 'users'
+UNREAD_COLLECTION  = 'unread_message'
 COMPANY_COLLECTION = 'company'
-EVENT_COLLECTION = 'event'
+EVENT_COLLECTION   = 'event'
+INVITE_COLLECTION  = 'invite'

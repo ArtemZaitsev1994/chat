@@ -66,6 +66,7 @@ class Company(web.View):
         data = {'is_socket': False}
         company = self.request.app['models']['company']
         unread = self.request.app['models']['unread']
+        user = self.request.app['models']['user']
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
@@ -77,6 +78,7 @@ class Company(web.View):
         data['is_member'] = bool(access)
         data['is_admin'] = self_id == data['company']['admin_id']
         data['own_login'] = login
+        data['users'] = await user.get_logins(data['company']['users'])
 
         unr_mess = await unread.check_unread(company_id, self_id)
         data['unread'] = unr_mess['count'] if unr_mess else 0

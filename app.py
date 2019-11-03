@@ -16,6 +16,7 @@ from auth.models import User
 from company.models import Company
 from chat.models import UnreadMessage, Message
 from events.models import Event, Photo
+from invite.models import Invite
 
 
 basedir = os.path.dirname(os.path.realpath(__file__))
@@ -32,7 +33,8 @@ async def create_models(app):
         'message': Message(app.db),
         'company': Company(app.db),
         'event': Event(app.db),
-        'photo': Photo(app.db)
+        'photo': Photo(app.db),
+        'invite': Invite(app.db)
     })
 
 middle = [
