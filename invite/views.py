@@ -17,14 +17,16 @@ class Invite(web.View):
     @aiohttp_jinja2.template('invite/invite_list.html')
     async def get(self):
         invite = self.request.app['models']['invite']
-        user = self.request.app['models']['invite']
-        company_id = self.request.rel_url.query.get('id')
+        user = self.request.app['models']['user']
+        company = self.request.app['models']['company']
+        company_id = self.request.rel_url.query.get('company_id')
+        company_name = (await company.get_company(company_id))['name']
 
-        invites = await invite.get_invites_by_comp(company_id)
+        invites = await invite.get_invites_by_comp(company_id, 'Ожидает')
         for i in invites:
-            i['login'] = await user.get_login(i['from_user'])
+            i['login'] = await user.get_login(i['user_id'])
 
-        return invites
+        return {'invites': invites, 'company_id': company_id, 'company_name': company_name}
 
     async def post(self):
         invite = self.request.app['models']['invite']
@@ -34,10 +36,32 @@ class Invite(web.View):
 
         self_id = session.get('user')
         if await invite.create_invite(self_id, data):
-            print('asdasda')
-            print(await invite.collection.find().to_list(length=None))
             return web.json_response(True)
         return web.json_response({'error': 'something went wrong'})
+
+    async def delete(self):
+        invite = self.request.app['models']['invite']
+
+        data = await self.request.json()
+        session = await get_session(self.request)
+
+        self_id = session.get('user')
+        print(await invite.delete(self_id, data['company_id']))
+        if await invite.delete(self_id, data['company_id']):
+            return web.json_response(True)
+        return web.json_response({'error': 'something went wrong'})
+
+    async def put(self):
+        invite = self.request.app['models']['invite']
+
+        data = await self.request.json()
+        if data['type']:
+            if await invite.accept_invite(data):
+                return web.json_response(True)
+        if await invite.decline_invite(data):
+            return web.json_response(True)
+        return web.json_response({'error': 'something went wrong'})
+
 
 class Event(web.View):
 

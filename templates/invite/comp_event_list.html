@@ -2,10 +2,6 @@
 
 {% block content %}
 <div class="container">
-
-    <meta id="company-data" 
-        data-company_id="{{company_id}}"
-    >
     <h4>
     Хотят вступить.
     </h4>
@@ -13,7 +9,7 @@
         {{company_name}}
     </a>
     {% for inv in invites %}
-    <div class="row" id='inv_{{inv.user_id}}'>
+    <div class="row" >
         <div class="col-1"></div> 
         <div class="col-8">
             <div class="col-5">
@@ -24,16 +20,16 @@
                         <div class="col">Записка: {{inv.note}}</div>
                     {% endif %}
             </div>
-                <input class="btn btn-primary accept_inv" title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Принять">
-                <input class="btn btn-primary decline_inv" id='decline' title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Отклонить">
+                <input class="btn btn-primary accept_inv" id='accept' title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Принять">
+                <input class="btn btn-primary decline_inv" id='decline' title="Создать ивент" type="button" value="Отклонить">
         </div>    
     </div>
     {% endfor %}
 </div>
 {% endblock %}
 
-
-{% block footer %}
 <script src="{{ static('js/invite.js') }}"></script>
 <link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
+
+{% block footer %}
 {% endblock %}

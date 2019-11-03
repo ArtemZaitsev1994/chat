@@ -67,6 +67,7 @@ class Company(web.View):
         company = self.request.app['models']['company']
         unread = self.request.app['models']['unread']
         user = self.request.app['models']['user']
+        invite = self.request.app['models']['invite']
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
@@ -76,9 +77,18 @@ class Company(web.View):
 
         access = next((x for x in data['company']['users'] if x == self_id), None)
         data['is_member'] = bool(access)
-        data['is_admin'] = self_id == data['company']['admin_id']
-        data['own_login'] = login
-        data['users'] = await user.get_logins(data['company']['users'])
+        if data['is_member']:
+            data['is_admin'] = self_id == data['company']['admin_id']
+            data['count_inv'] = await invite.get_invites_number(company_id)
+        else:
+            data['users'] = await user.get_logins(data['company']['users'])
+            inv = await invite.get_invite_to_company(self_id, company_id)
+            data['action_btn'] = 'Отправить запрос на вступление'
+            if inv:
+                data['action'] = f'Запрос отправлен. Статус: {inv["status"]}'
+                data['action_btn'] = 'Отменить запрос'
+                data['sent_invite'] = True
+                data['inv_status'] = inv['status'] 
 
         unr_mess = await unread.check_unread(company_id, self_id)
         data['unread'] = unr_mess['count'] if unr_mess else 0

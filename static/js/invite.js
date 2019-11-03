@@ -24,6 +24,7 @@ $(document).ready(function(){
         if ($('#password').length){
             data['password'] = $('#password').val()
         }
+        console.log(data)
         $.ajax({
             dataType: 'json',
             url: '/company',
@@ -58,6 +59,7 @@ $(document).ready(function(){
 
     })
     $('#delete').on('click', () => {
+        console.log(1)
         data = {
             'company_id': company_id
         }
@@ -76,55 +78,49 @@ $(document).ready(function(){
         });
 
     })
-    $('#invitation').on('click', () => {
-        if ($('#note').length > 0){
-            data = {
-                'company_id': company_id,
-                'note': $('#note').val()
-            }
-
-            $.ajax({
-                dataType: 'json',
-                url: '/invite',
-                type: 'POST',
-                data: JSON.stringify(data),
-                success: function(data) {
-                    if (data){
-                         $('#invitation').text('Отменить запрос')
-                         $('#invitation_data').html(`<p style="color: green">Запрос отправлен. Статус: Ожидает</p>`)
-                     } else {
-                        showError('Ошибка на стороне сервера')
-                    }
-                }
-            });
-
-        } else {
-
-            data = {
-                'company_id': company_id
-            }
-
-            $.ajax({
-                dataType: 'json',
-                url: '/invite',
-                type: 'DELETE',
-                data: JSON.stringify(data),
-                success: function(data) {
-                    if (data){
-                         $('#invitation').text('Отправить запрос на вступление')
-                         $('#invitation_data').html(`
-                            <div class="input-group">
-                              <div class="input-group-prepend">
-                                <span class="input-group-text">Записка админу</span>
-                              </div>
-                              <textarea class="form-control" id='note' aria-label="With textarea"></textarea>
-                            </div>`)
-                    } else {
-                        showError('Ошибка на стороне сервера')
-                    }
-                }
-            });
+    $('.accept_inv').on('click', function() {
+        user_id = this.getAttribute('user_id')
+        data = {
+            'user_id': user_id,
+            'company_id': company_id,
+            'type': true,
         }
+        $.ajax({
+            dataType: 'json',
+            url: '/invite',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data){
+                     $(`#inv_${user_id}`).html('<p style="{color: green}">Принят</p>')
+                 } else {
+                    showError('Ошибка на стороне сервера')
+                }
+            }
+        });
+
+    })
+    $('.decline_inv').on('click', function() {
+        user_id = this.getAttribute('user_id')
+        data = {
+            'user_id': user_id,
+            'company_id': company_id,
+            'type': false,
+        }
+
+        $.ajax({
+            dataType: 'json',
+            url: '/invite',
+            type: 'PUT',
+            data: JSON.stringify(data),
+            success: function(data) {
+                if (data){
+                     $(`#inv_${user_id}`).html('<p style="{color: red}">Отклонен</p>')
+                } else {
+                    showError('Ошибка на стороне сервера')
+                }
+            }
+        });
 
     })
 });

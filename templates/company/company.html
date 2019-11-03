@@ -13,7 +13,7 @@
         data-company_id="{{company._id}}"
     >
     <br>
-    {% if is_member %}
+{% if is_member %}
     <div class="row">
         <div class="col">
             <a href="{{ '/event?chat_id=%s'%company._id|urlencode }}">
@@ -57,37 +57,44 @@
     </div>
 </div>
 <br>
-{% if is_admin %}
-<div class="row">
-    <div class="col-2"></div>
-    <div class="col-8">
+    {% if is_admin %}
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
 
-        <a href="#">
-            <button 
-            id='delete'
-            type="button" 
-            class="btn btn-danger btn-sm btn-block">
-            Удалить ТусЭ
-            </button>
-        </a>
+            <a href="#">
+                <button 
+                id='delete'
+                type="button" 
+                class="btn btn-danger btn-sm btn-block">
+                Удалить ТусЭ
+                </button>
+            </a>
+            <a href="{{'/invite?company_id=%s'%company._id|urlencode}}">
+                <button 
+                type="button" 
+                class="btn btn-danger btn-sm btn-block">
+                Заявки на вступление {{ count_inv }}
+                </button>
+            </a>
+        </div>
     </div>
-</div>
-{% else %}
-<div class="row">
-    <div class="col-2"></div>
-    <div class="col-8">
+    {% else %}
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
 
-        <a href="#">
-            <button 
-            id='quit'
-            type="button" 
-            class="btn btn-danger btn-sm btn-block">
-            Выйти из ТусЭ
-            </button>
-        </a>
+            <a href="#">
+                <button 
+                id='quit'
+                type="button" 
+                class="btn btn-danger btn-sm btn-block">
+                Выйти из ТусЭ
+                </button>
+            </a>
+        </div>
     </div>
-</div>
-{% endif %}
+    {% endif %}
 {% else %}
     {% if company.private %}
     <div class="row">
@@ -102,15 +109,21 @@
             </div>
             <div style="display:flex">   
                 <div id="error" style="color: red;"></div>
-                <button type='button' id='accept' class='btn btn-primary btn-sm btn-block'>Вступить в ТусЭ (нужен пароль от админа):</button><input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Password" id="password" required>
+                <button type='button' id='accept' class='col-3 btn btn-primary btn-sm btn-block'>Вступить в ТусЭ (нужен пароль от админа):</button><input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Password" id="password" required>
             </div>
-            <div id='invite'>
-                <button type='button' id='invitation' class='btn btn-info btn-sm btn-block'>Попроситься в группу</button>
-                <div class="input-group">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text">Записка админу</span>
-                  </div>
-                  <textarea class="form-control" id='note' aria-label="With textarea"></textarea>
+            <div style="display:flex">
+                <button type='button' id='invitation' class='col-3 btn btn-primary btn-sm btn-block'>{{action_btn}}</button>
+                <div id='invitation_data'>
+                    {% if sent_invite %}
+                            <p style="color: green">{{action}}</p>
+                    {% else %}
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">Записка админу</span>
+                      </div>
+                      <textarea class="form-control" id='note' aria-label="With textarea"></textarea>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
