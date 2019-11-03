@@ -50,7 +50,7 @@ class AllCompanys(web.View):
     async def get(self):
         session = await get_session(self.request)
         login = session.get('login')
-        data = {'is_socket': False}
+        data = {'is_socket': False, 'own_login': login}
         company = self.request.app['models']['company']
         # await company.clear_db()
 
@@ -63,7 +63,6 @@ class Company(web.View):
 
     @aiohttp_jinja2.template('/company/company.html')
     async def get(self, **kw):
-        data = {'is_socket': False}
         company = self.request.app['models']['company']
         unread = self.request.app['models']['unread']
         user = self.request.app['models']['user']
@@ -71,6 +70,7 @@ class Company(web.View):
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
+        data = {'is_socket': False, 'own_login': login}
 
         company_id = self.request.rel_url.query.get('id')
         data['company'] = await company.get_company(company_id)
@@ -85,6 +85,7 @@ class Company(web.View):
             inv = await invite.get_invite_to_company(self_id, company_id)
             data['action_btn'] = 'Отправить запрос на вступление'
             if inv:
+                print(inv)
                 data['action'] = f'Запрос отправлен. Статус: {inv["status"]}'
                 data['action_btn'] = 'Отменить запрос'
                 data['sent_invite'] = True
@@ -130,3 +131,22 @@ async def check_access_to_company(request):
     if not access:
         return web.json_response(False)
     return web.json_response(True)
+
+
+class CompanyDetails(web.View):
+    @aiohttp_jinja2.template('/company/company_details.html')
+    async def get(self):
+        company = self.request.app['models']['company']
+        user = self.request.app['models']['user']
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        data = {'is_socket': False, 'own_login': login}
+
+        company_id = self.request.rel_url.query.get('company_id')
+        comp = await company.get_company(company_id)
+        comp['users'] = await user.get_logins(comp['users'])
+
+        data['users'] = comp['users']
+
+        return {'company': comp}

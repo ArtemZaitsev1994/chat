@@ -44,13 +44,13 @@ class Invite:
         return count
 
     async def decline_invite(self, data):
-        await self.collection.update_one(
+        return await self.collection.update_one(
             {'user_id': data['user_id'], 'company_id': data['company_id']},
             {'$set': {'status': 'Отклонено'}}
         )
 
     async def accept_invite(self, data):
-        await self.collection.update_one(
+        return await self.collection.update_one(
             {'user_id': data['user_id'], 'company_id': data['company_id']},
             {'$set': {'status': 'Принято'}}
         )

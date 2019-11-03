@@ -17,12 +17,12 @@
             {% for comp in companys %}
                 <div>
                 <a href="{{ '/company?id=%s'%comp._id|urlencode }}">
-                        <button 
-                            type="button" 
-                            class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
-                            id="user_{{comp.name}}">
-                                {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
-                        </button>
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
+                        id="user_{{comp.name}}">
+                            {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
+                    </button>
                 </a>
                 </div>
             {% endfor %}

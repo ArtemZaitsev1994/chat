@@ -5,7 +5,7 @@ from chat.views import (
 )
 from auth.views import Login, SignIn, SignOut, AccountDetails
 from about.views import About, drop_all
-from company.views import Company, AllCompanys, MyCompany, check_access_to_company
+from company.views import Company, AllCompanys, MyCompany, check_access_to_company, CompanyDetails
 from events.views import Event, CompEventList, CompEvent, Photo
 from invite.views import Invite
 
@@ -16,8 +16,8 @@ routes = [
     ('GET',  '/ws_common',  CommonWebSocket,  'common_websocket'),
     ('POST', '/update',     update_unread,    'update'),
     ('POST', '/user_chat',  UserChat,         'user_chat'),
-    ('POST', '/user_chat_company',  UserChatCompany,  'user_chat_company'),
-    ('POST', '/update_unread_company',  update_unread_company,  'update_unread_company'),
+    ('POST', '/user_chat_company',      UserChatCompany,       'user_chat_company'),
+    ('POST', '/update_unread_company',  update_unread_company, 'update_unread_company'),
 
     ('*', '/login',   Login,          'login'),
     ('*', '/signin',  SignIn,         'signin'),
@@ -25,9 +25,10 @@ routes = [
     ('*', '/account', AccountDetails, 'account'),
 
 
-    ('*',    '/my_companys',  MyCompany,      'my_companys'),
-    ('*',    '/all_companys', AllCompanys,    'all_companys'),
-    ('*',    '/company',      Company,        'company'),
+    ('*',    '/my_companys',     MyCompany,      'my_companys'),
+    ('*',    '/all_companys',    AllCompanys,    'all_companys'),
+    ('*',    '/company',         Company,        'company'),
+    ('*',    '/company_details', CompanyDetails, 'details'),
     ('POST', '/check_access_to_company', check_access_to_company, 'check_access_to_company'),
 
     ('*', '/event',           Event,         'event'),

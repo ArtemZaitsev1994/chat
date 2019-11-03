@@ -53,13 +53,16 @@ class Invite(web.View):
 
     async def put(self):
         invite = self.request.app['models']['invite']
+        company = self.request.app['models']['company']
 
         data = await self.request.json()
         if data['type']:
             if await invite.accept_invite(data):
+                await company.add_user_to_comp(data['company_id'], data['user_id'])
                 return web.json_response(True)
-        if await invite.decline_invite(data):
-            return web.json_response(True)
+        else:
+            if await invite.decline_invite(data):
+                return web.json_response(True)
         return web.json_response({'error': 'something went wrong'})
 
 

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}
+ТусЭ about
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container" id='messages_box'>
+    <div><a href="{{ '/company?id=%s'%company._id|urlencode }}">
+    <h4>{{company.name}}</h4></div></a>
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-5">
+            <form autocomplete="on">
+                <div id="error" style="color: red;"></div>
+                <div id="success" style="color: green;"></div>
+                <div class="form-group">
+                    <label>Сменить название:
+                        <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Login" id="name" value="{{company.name}}"required>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>О ТусЭ:
+                        <input type="text" class="form-control" placeholder="About" id="about" value="{{ company.about }}" required>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Закрытая
+                        <input type="checkbox" class="form-control", id="private" {% if company.private %}checked{%endif%}>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Сменить пароль
+                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password" required {% if not company.private %}disabled{%endif%}>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Подтвердите пароль
+                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password" required {% if not company.private %}disabled{%endif%}>
+                    </label>
+                </div>
+                <p>
+                    <input class="btn btn-primary" id="submit" title="Создать ТусЭ" type="button" value="Создать ТусЭ">
+                </p>
+            </form>
+        </div>
+        <div class="col-5">
+            <ul>
+                {% for user in company.users.values() %}
+                <li>
+                    <div class='row'>    
+                        <div class="col-8">
+                            {{ user }} 
+                        </div>
+                        <hr>
+                        <div class="col-4">   
+                            <input class="btn btn-primary btn-sm" id="submit" title="Исключить" type="button" value="Выгнать, как собаку">
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+{% endblock %}
