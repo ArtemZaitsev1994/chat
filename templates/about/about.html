@@ -29,8 +29,23 @@
         </ul>
     <p>Предложения, пожелания, благодарения ваши присылать в личку <a href="https://vk.com/artemleonzaitsev">Артёмушке</a></p>
     </div>
+
+
+    <p>
+        <div class="mb-3">
+            <label for="validationTextarea">Отправить анонимку с хейтом или любовью мне на почту <a href="mailto:artz1994@mail.ru">artz1994@mail.ru</a></label>
+            <textarea type="text" class="form-control" id="message" placeholder="Required example textarea" required></textarea>
+            <label>Введите обратный адрес, если надеетесь, что я отвечу (АХАХАХ, голубцы)
+                <input type="text" class="form-control" placeholder="Почта, номер телефона, аська, скайп и т.д." id="callback" required>
+            </label>
+        </div>
+                <div id="error" style="color: red;"></div>
+                <div id="success" style="color: green;"></div>
+        <input class="btn btn-primary" type="submit" id='submit' value="тправить E-mail">
+    </p>
 </div>
 {% endblock %}
 
 {% block footer %}
+<script type="text/javascript" src="{{ static('js/callback_message.js') }}"></script>
 {% endblock %}

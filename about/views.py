@@ -1,7 +1,10 @@
 import aiohttp_jinja2
 import collections
+import aiosmtplib
+
 from aiohttp import web
 from aiohttp_session import get_session
+from email.mime.text import MIMEText
 
 from utils import get_context
 from auth.models import User
@@ -23,6 +26,23 @@ class About(web.View):
             'self_id': data['self_id']
         }
         return context
+
+    async def post(self):
+        data = await self.request.json()
+        message = MIMEText("Sent via aiosmtplib")
+        message["From"] = "root@localhost"
+        message["To"] = "artz1994@mail.ru"
+        message["Subject"] = f'{data["message"]}\n\n\n\n\n\n{data["callback"]}'
+        server = aiosmtplib.SMTP('smtp.gmail.com', 587)
+        # TODO: 
+        await server.connect()
+        await server.ehlo()
+        await server.starttls()
+        await server.login("tuse.web1@gmail.com", "TUSE_web1")
+        text = message.as_string()
+        await server.sendmail("tuse.web1@gmail.com", 'tuse.web1@gmail.com', text)
+        # print(await aiosmtplib.send(message, hostname="smtp.mail.ru", port=465, username='tuse.web1@gmail.ru', password='TUSE_web1'))
+        return web.json_response(True)
 
 
 async def drop_all(request):
