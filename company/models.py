@@ -11,8 +11,22 @@ class Company():
     async def get_company(self, _id, **kw):
         return await self.collection.find_one({'_id': ObjectId(_id)})
 
+    async def get_companys_by_user(self, user_id):
+        result = await self.collection.find({'users':{'$in': [user_id]}, 'admin_id': {'$ne': user_id}}).to_list(length=None)
+        return result
+
+    async def get_own_companys(self, user_id):
+        result = await self.collection.find({'admin_id': user_id}).to_list(length=None)
+        return result
+
     async def get_company_by_name(self, name, **kw):
         return await self.collection.find_one({'name': name})
+
+    async def check_access(self, company_id, user_id):
+        company = await self.get_company(company_id)
+        if company:
+            return user_id == company['admin_id']
+        return False
 
     async def create_company(self, data, admin_id, **kw):
         company = await self.get_company_by_name(data['name'])

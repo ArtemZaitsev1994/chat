@@ -14,6 +14,7 @@ $(document).ready(function(){
     }
 
     $('#submit').click(function(){
+        console.log('asd')
         errors = ''
         invalid_fields = []
         $(':invalid').each(function(){

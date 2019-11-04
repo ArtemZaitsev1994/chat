@@ -145,8 +145,29 @@ class CompanyDetails(web.View):
 
         company_id = self.request.rel_url.query.get('company_id')
         comp = await company.get_company(company_id)
+        comp['users'].remove(self_id)
         comp['users'] = await user.get_logins(comp['users'])
 
-        data['users'] = comp['users']
+        data['company'] = comp
+        data['access'] = await company.check_access(company_id, self_id)
 
-        return {'company': comp}
+        return data
+
+    async def post(self):
+        """
+        работа с юзерами
+        """
+        company = self.request.app['models']['company']
+        user = self.request.app['models']['user']
+        session = await get_session(self.request)
+        self_id = session.get('user')
+
+        data = await self.request.json()
+        if not await company.check_access(data['company_id'], self_id):
+            return web.json_response()
+        if data['delete']:
+            await company.delete_user_from_comp(data['company_id'], data['user_id'])
+        else:
+            await company.add_user_to_comp(data['company_id'], data['user_id'])
+        return web.json_response(True)
+

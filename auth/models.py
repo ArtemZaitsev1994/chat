@@ -19,6 +19,9 @@ class User():
         result =  await self.collection.find_one({'_id': ObjectId(user_id)})
         return result['login']
 
+    async def get_user(self, user_id):
+        return await self.collection.find_one({'_id': ObjectId(user_id)})
+
     async def get_logins(self, users_id, **kw):
         result = {str(x['_id']): x['login'] for x in await self.collection.find(
             {'_id':{'$in': [ObjectId(y) for y in users_id]}}

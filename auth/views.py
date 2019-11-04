@@ -65,19 +65,34 @@ class SignOut(web.View):
 class AccountDetails(web.View):
 
     @aiohttp_jinja2.template('auth/account.html')
-    @get_context
-    async def get(self, data, **kw):
-        data['user'].login = data['login']
-        account = await data['user'].check_user()
+    async def get(self, **kw):
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        user = self.request.app['models']['user']
+        company = self.request.app['models']['company']
+
+
+        user_id = self.request.rel_url.query.get('id')
+        if user_id:
+            account = await user.get_user(user_id)
+            access = user_id == self_id
+            users_company = await company.get_companys_by_user(user_id)
+            own_user_company = await company.get_own_companys(user_id)
+        else:
+            users_company = await company.get_companys_by_user(self_id)
+            own_user_company = await company.get_own_companys(self_id)
+            account = await user.get_user(self_id)
+            access = True
 
         context_data = {
-            'users': data['users'],
-            'own': account,
-            'unread_counter': data['unread_counter'],
-            'own_login': data['login'],
+            'user': account,
+            'own_login': login,
             'is_socket': True,
-            'online': data['online_id'],
-            'self_id': data['self_id']
+            'self_id': self_id,
+            'access': access,
+            'own_companys': own_user_company,
+            'companys': users_company,
         }
         return context_data
 

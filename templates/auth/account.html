@@ -12,6 +12,7 @@
     <meta id="my-data" >
     <br>
     <div class="row">
+    {% if access %}
         <div class="col-2">
         </div>    
         <div class="col-8">
@@ -19,32 +20,32 @@
                 <div id="error" style="color: red;"></div>
                 <div id="success" style="color: green;"></div>
                 <div class="form-group">
-                    <div id="login_label">Ваш логин: {{own.login}}</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Чтобы изменить введите новый логин" id="login">
+                    <div id="login_label">Ваш логин</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Чтобы изменить введите новый логин" id="login" value="{{user.login}}">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="name_label">Имя: {% if own.name %}{{own.name}}{% else %}Не указано{% endif %}</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if own.name %}Чтобы изменить введите новое имя{% else %}Введите свое имя{% endif %}" id="name">
+                    <div id="name_label">Имя</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Не указано" id="name" value="{{user.name}}">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="sername_label">Фамилия: {% if own.sername %}{{own.sername}}{% else %}Не указано{% endif %}</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="{% if own.sername %}Чтобы изменить введите новую фамилию{% else %}Введите свою фамилию{% endif %}" id="sername">
+                    <div id="sername_label">Фамилия</div>
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Не указано" id="sername" value="{{user.sername}}">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="email_label">E-mail: {% if own.email %}{{own.email}}{% else %}Не указано{% endif %}</div>
-                        <input type="email" class="form-control" placeholder="{% if own.email %}Чтобы изменить введите новый e-mail{% else %}Введите свой e-mail{% endif %}" id="email">
+                    <div id="email_label">E-mail</div>
+                        <input type="email" class="form-control" placeholder="Не указано" id="email" value="{{user.email}}" value="{{user.email}}">
                 </div>
                 <hr>
 
                 <div class="form-group">
-                    <div id="bday_label">День рождения: {% if own.bday %}{{own.bday}}{% else %}Не указано{% endif %}</div>
-                        <input type="date" class="form-control" id="bday">
+                    <div id="bday_label">День рождения</div>
+                        <input type="date" class="form-control" id="bday" value="{{user.bday}}">
                 </div>
                 <hr>
 
@@ -63,11 +64,101 @@
                     <input class="btn btn-primary" id="submit" title="Сохранить" type="button" value="Сохранить">
                 </p>
             </form>
+
+            <hr>
+            <div class="form-group">
+                <div>Собственные тусовки: 
+                    {% if own_companys %}
+                        <div class="col-1"></div>
+                        <div class="col-9">
+                        {% for c in own_companys %}
+                            <div>
+                                {{c.name}}
+                            </div>
+
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        Не создано
+                    {% endif %}
+                </div>
+            </div>
+            <hr>
+            <div class="form-group">
+                <div>
+                    {% if companys %}
+                        Состоите в:
+                        <div class="col-1"></div>
+                        <div class="col-9">
+                        {% for c in companys %}
+                            <div>                                
+                                <a href="{{ '/company?id=%s'%c._id|urlencode }}">
+                                    {{c.name}} ({% if c.private %}Закрытая{% else %}Открытая{% endif %})
+                                </a>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        Нигде не тусуется
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-2">
         </div>    
+        <div class="col-8">
+            <div class="form-group">
+                <div>Логин: {{user.login}}</div>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <div>Имя: {% if user.name %}{{user.name}}{% else %}Не указано{% endif %}</div>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <div>Фамилия: {% if user.sername %}{{user.sername}}{% else %}Не указано{% endif %}</div>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <div>E-mail: {% if user.email %}{{user.email}}{% else %}Не указано{% endif %}"</div>
+            </div>
+            <hr>
+
+            <div class="form-group">
+                <div>День рождения: {% if user.bday %}{{user.bday}}{% else %}Не указано{% endif %}"</div>
+            </div>
+            <hr>
+            <div class="form-group">
+                <div>Собственные тусовки: 
+                    {% if own_companys %}
+                        <div class="col-1"></div>
+                        <div class="col-9">
+                        {% for c in own_companys %}
+                            <div>
+                                {{c.name}}
+                            </div>
+
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        Не создано
+                    {% endif %}
+                </div>
+            </div>
+            <hr>
+            <div class="form-group">
+                <div>{% if companys %}Состоит в: {{companys}}{% else %}Нигде не тусуется{% endif %}</div>
+            </div>
+        </div>
+    {% endif %}
     </div>
 </div>
 {% endblock %}
 
-<script src="{{ static('js/account.js') }}"></script>
 {% block footer %}
+<script src="{{ static('js/account.js') }}"></script>
 {% endblock %}

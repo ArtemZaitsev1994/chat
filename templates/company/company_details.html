@@ -9,6 +9,10 @@
 {% endblock %}
 {% block content %}
 <div class="container" id='messages_box'>
+    <meta id="company-data" 
+        data-company_id="{{company._id}}"
+    >
+{% if access %}
     <div><a href="{{ '/company?id=%s'%company._id|urlencode }}">
     <h4>{{company.name}}</h4></div></a>
     <div class="row">
@@ -43,21 +47,21 @@
                     </label>
                 </div>
                 <p>
-                    <input class="btn btn-primary" id="submit" title="Создать ТусЭ" type="button" value="Создать ТусЭ">
+                    <input class="btn btn-primary" id="submit" title="Сохранить изменения" type="button" value="Сохранить изменения">
                 </p>
             </form>
         </div>
         <div class="col-5">
             <ul>
-                {% for user in company.users.values() %}
+                {% for _id, user in company.users.items() %}
                 <li>
                     <div class='row'>    
                         <div class="col-8">
-                            {{ user }} 
+                            <a href="{{ '/account?id=%s'%_id|urlencode }}">{{ user }}</a>
                         </div>
                         <hr>
                         <div class="col-4">   
-                            <input class="btn btn-primary btn-sm" id="submit" title="Исключить" type="button" value="Выгнать, как собаку">
+                            <input class="btn btn-primary btn-sm exclude" id="exclude_{{_id}}" title="Исключить" user_id={{_id}} type="button" do='delete' value="Исключить">
                         </div>
                     </div>
                 </li>
@@ -65,9 +69,39 @@
             </ul>
         </div>
     </div>
+{% else %}
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-5">
+                <div class="form-group">
+                    <p>Название: {{company.name}}</p>
+                </div>
+                <div class="form-group">
+                    <p>О ТусЭ: {{ company.about }}</p>
+                </div>
+                <div class="form-group">
+                    <p>{% if company.private %}Закрытая{%else%}Открытая{%endif%}</p>
+                </div>
+        </div>
+        <div class="col-5">
+            <ul>
+                {% for _id, user in company.users.items() %}
+                <li>
+                    <div class='row'>    
+                        <div class="col-8">
+                            <a href="{{ '/account?id=%s'%_id|urlencode }}">{{ user }}</a>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+{% endif %}
 </div>
 {% endblock %}
 
 {% block footer %}
-<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+<script type="text/javascript" src="{{ static('js/company_details.js') }}"></script>
 {% endblock %}
