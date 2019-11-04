@@ -16,6 +16,7 @@ class Event:
         return await self.collection.find_one({'name': name})
 
     async def create_event(self, data, admin_id, **kw):
+        print(data)
         event = await self.get_event_by_name(data['name'])
         if not event:
             company_id = data.pop('company_id')
@@ -38,6 +39,7 @@ class Event:
         await self.collection.update_one({'_id': ObjectId(_id) }, {'$set': {'avatar': photo_id}})
 
     async def get_events_by_comp(self, company_id, **kw):
+        print( await self.collection.find().to_list(length=None))
         events = await self.collection.find({'company_id': company_id}).to_list(length=None)
         for e in events:
             e['_id'] = str(e['_id'])

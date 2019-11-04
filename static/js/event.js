@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+    var company_id = $('#company-data').data().company_id
+
     function showError(error){
         $('#success').html('');
         $('#error').html(error);
@@ -55,7 +57,8 @@ $(document).ready(function(){
             new_data['time'] = $('#time').val()
         }
         new_data['private'] = $('#private').prop('checked')
-        new_data['company_id'] = $.urlParam('id')
+        new_data['company_id'] = company_id
+        console.log(new_data)
         $.post('event', JSON.stringify(new_data), function(data){
             if (data.error){
                 showError(data.error);

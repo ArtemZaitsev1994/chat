@@ -56,6 +56,7 @@ class CompEventList(web.View):
         login = session.get('login')
 
         events = await event.get_events_by_comp(company_id)
+        print(events)
         return {'company_id': company_id, 'events': events, 'own_login': login}
 
 

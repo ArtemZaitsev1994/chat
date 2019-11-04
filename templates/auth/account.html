@@ -73,7 +73,7 @@
                         <div class="col-9">
                         {% for c in own_companys %}
                             <div>
-                                {{c.name}}
+                                <a href="{{ '/company?id=%s'%c._id|urlencode }}">{{c.name}} ({% if c.private %}Закрытая{% else %}Открытая{% endif %})</a>
                             </div>
 
                         {% endfor %}
@@ -139,7 +139,7 @@
                         <div class="col-9">
                         {% for c in own_companys %}
                             <div>
-                                {{c.name}}
+                                <a href="{{ '/company?id=%s'%c._id|urlencode }}">{{c.name}} ({% if c.private %}Закрытая{% else %}Открытая{% endif %})</a>
                             </div>
 
                         {% endfor %}
@@ -151,7 +151,21 @@
             </div>
             <hr>
             <div class="form-group">
-                <div>{% if companys %}Состоит в: {{companys}}{% else %}Нигде не тусуется{% endif %}</div>
+               {% if companys %}
+                        Состоите в:
+                        <div class="col-1"></div>
+                        <div class="col-9">
+                        {% for c in companys %}
+                            <div>                                
+                                <a href="{{ '/company?id=%s'%c._id|urlencode }}">
+                                    {{c.name}} ({% if c.private %}Закрытая{% else %}Открытая{% endif %})
+                                </a>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        Нигде не тусуется
+                    {% endif %}
             </div>
         </div>
     {% endif %}
