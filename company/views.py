@@ -14,9 +14,12 @@ class MyCompany(web.View):
 
     @aiohttp_jinja2.template('company/my_companys.html')
     async def get(self):
+        company = self.request.app['models']['company']
         session = await get_session(self.request)
         login = session.get('login')
-        data = {'is_socket': False, 'own_login': login}
+        self_id = session.get('user')
+        my_companys = await company.get_own_companys(self_id)
+        data = {'is_socket': False, 'own_login': login, 'my_companys': my_companys}
         return data
 
     async def post(self, **kw):
@@ -85,7 +88,6 @@ class Company(web.View):
             inv = await invite.get_invite_to_company(self_id, company_id)
             data['action_btn'] = 'Отправить запрос на вступление'
             if inv:
-                print(inv)
                 data['action'] = f'Запрос отправлен. Статус: {inv["status"]}'
                 data['action_btn'] = 'Отменить запрос'
                 data['sent_invite'] = True

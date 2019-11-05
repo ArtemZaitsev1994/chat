@@ -68,7 +68,7 @@ $(document).ready(function(){
             data: JSON.stringify(data),
             success: function(data) {
                 if (data){
-                     window.location.replace("/all_companys");
+                     window.location.replace("/news");
                 } else {
                     showError('Ошибка на стороне сервера')
                 }

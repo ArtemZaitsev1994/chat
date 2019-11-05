@@ -53,7 +53,6 @@ $(document).ready(function(){
         } else {
             new_data['private'] = false
         }
-        console.log(new_data)
         $.post('my_companys', JSON.stringify(new_data), function(data){
             if (data.error){
                 showError(data.error);
@@ -62,4 +61,14 @@ $(document).ready(function(){
             }
         });
     });
+
+    $('#my_companys').on('click', function() {
+        console.log(this)
+        $(`#create_block`).css('display', 'none')
+        $('#companys').css('display', 'block')
+    })
+    $('#create_company').on('click', function() {
+        $('#create_block').css('display', 'block')
+        $(`#companys`).css('display', 'none')
+    })
 });
