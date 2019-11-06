@@ -8,6 +8,7 @@ from about.views import About, drop_all
 from company.views import Company, AllCompanys, MyCompany, check_access_to_company, CompanyDetails
 from events.views import Event, CompEventList, CompEvent, Photo
 from invite.views import Invite
+from features.views import Search
 
 routes = [
     ('GET',  '/',           main_redirect,    'main_redirect'),
@@ -35,8 +36,11 @@ routes = [
     ('*', '/comp_event_list', CompEventList, 'comp_event_list'),
     ('*', '/comp_event',      CompEvent,     'comp_event'),
     ('*', '/photo',           Photo,         'photo'),
+    ('*', '/user_avatar',     Photo,         'user_avatar'),
 
     ('*', '/invite', Invite, 'invite'),
+
+    ('*', '/search', Search, 'search'),
 
     ('*',   '/about',    About,    'about_main'),
     # ОЧИСТКА БАЗЫ!!!!!!!!!!!

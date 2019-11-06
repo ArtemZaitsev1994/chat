@@ -40,7 +40,7 @@ class Company():
             result = False
         return result
 
-    async def get_all_comp(self, **kw):
+    async def get_all(self, **kw):
         companys = await self.collection.find().to_list(length=None)
         for c in companys:
             c['_id'] = str(c['_id'])

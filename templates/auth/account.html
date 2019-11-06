@@ -15,7 +15,7 @@
     {% if access %}
         <div class="col-2">
         </div>    
-        <div class="col-8">
+        <div class="col-5">
             <form autocomplete="on">
                 <div id="error" style="color: red;"></div>
                 <div id="success" style="color: green;"></div>
@@ -27,13 +27,19 @@
 
                 <div class="form-group">
                     <div id="name_label">Имя</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Не указано" id="name" value="{{user.name}}">
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]" placeholder="Не указано" id="name" value="{{user.name}}">
                 </div>
                 <hr>
 
                 <div class="form-group">
                     <div id="sername_label">Фамилия</div>
-                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Не указано" id="sername" value="{{user.sername}}">
+                        <input class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]" placeholder="Не указано" id="sername" value="{{user.sername}}">
+                </div>
+                <hr>
+
+                <div class="form-group">
+                    <div id="sername_label">Обо мне</div>
+                        <input class="form-control" placeholder="Не указано" id="about" value="{{user.about}}">
                 </div>
                 <hr>
 
@@ -104,10 +110,28 @@
                 </div>
             </div>
         </div>
+        <div class="col-5">
+            {% if user.avatar %}
+                <img style="width: 360px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
+                <label for="photo">Сменить автар</label>
+            {% else %}
+                <h2>Avatar</h2>
+                <label for="photo">Загрузить аватар</label>
+            {% endif %}
+            <div class="row">
+                <form action="/user_avatar" method="post" accept-charset="utf-8"
+                      enctype="multipart/form-data">
+                    <input id="photo" name="photo" type="file" value="" />
+                    <input id="user_id" name="user_id" type="hidden" value="{{user._id}}" />
+                    <input type="submit" value="Отправить" />
+                </form>
+            </div>
+             <hr>
+        </div>
     {% else %}
         <div class="col-2">
         </div>    
-        <div class="col-8">
+        <div class="col-5">
             <div class="form-group">
                 <div>Логин: {{user.login}}</div>
             </div>
@@ -167,6 +191,14 @@
                         Нигде не тусуется
                     {% endif %}
             </div>
+        </div>
+        <div class="col-5">
+            {% if user.avatar %}
+                <img style="width: 360px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
+            {% else %}
+                <h2>Avatar</h2>
+            {% endif %}
+             <hr>
         </div>
     {% endif %}
     </div>

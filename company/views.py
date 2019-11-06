@@ -55,9 +55,11 @@ class AllCompanys(web.View):
         login = session.get('login')
         data = {'is_socket': False, 'own_login': login}
         company = self.request.app['models']['company']
+        event = self.request.app['models']['event']
         # await company.clear_db()
 
-        data['companys'] = await company.get_all_comp()
+        data['companys'] = {x['_id']: x['name'] for x in await company.get_all()}
+        data['events'] = await event.get_events_by_companys([x for x in data['companys']])
         data['own_login'] = login
         return data
 
@@ -147,8 +149,9 @@ class CompanyDetails(web.View):
 
         company_id = self.request.rel_url.query.get('company_id')
         comp = await company.get_company(company_id)
-        comp['users'].remove(self_id)
-        comp['users'] = await user.get_logins(comp['users'])
+        if self_id in comp['users']:
+            comp['users'].remove(self_id)
+        comp['users'] = await user.get_users(comp['users'])
 
         data['company'] = comp
         data['access'] = await company.check_access(company_id, self_id)

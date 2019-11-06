@@ -21,6 +21,7 @@ from invite.models import Invite
 
 basedir = os.path.dirname(os.path.realpath(__file__))
 photo_dir = os.path.join(basedir, 'static/photo/')
+avatar_dir = os.path.join(basedir, 'static/photo/users/')
 
 async def on_shutdown(app):
     for room in app['websockets']:
@@ -59,6 +60,7 @@ app['websockets'] = collections.defaultdict(list)
 app['online'] = {}
 app['models'] = {}
 app['photo_dir'] = photo_dir
+app['avatar_dir'] = avatar_dir
 app.on_startup.append(create_models)
 
 web.run_app(app)

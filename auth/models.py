@@ -10,6 +10,8 @@ class User():
         self.email = data.get('email')
         self.login = data.get('login')
         self.password = data.get('password')
+        self.about = data.get('about', '')
+        self.avatar = data.get('about', '')
         self.id = data.get('id')
 
     async def check_user(self, **kw):
@@ -34,10 +36,21 @@ class User():
             u['_id'] = str(u['_id'])
         return users
 
+    async def get_users(self, users_list, **kw):
+        result = await self.collection.find({'_id':{'$in': [ObjectId(y) for y in users_list]}}).to_list(length=None)
+        return result
+
+
     async def create_user(self, **kw):
         user = await self.check_user()
         if not user:
-            result = await self.collection.insert({'email': self.email, 'login': self.login, 'password': self.password})
+            result = await self.collection.insert({
+                'email': self.email,
+                'login': self.login,
+                'password': self.password,
+                'about': self.about,
+                'avatar': self.avatar,
+            })
         else:
             result = 'User exists'
         return result
@@ -48,6 +61,9 @@ class User():
             data
         )
         return result
+
+    async def set_avatar(self, _id, photo_id):
+        await self.collection.update_one({'_id': ObjectId(_id) }, {"$set": {'avatar': photo_id}})
 
     async def clear_db(self):
         await self.collection.drop()

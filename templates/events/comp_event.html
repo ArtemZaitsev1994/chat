@@ -28,7 +28,8 @@
         <div class="col-3">
             <div class="col">Название: {{event.name}}</div>
                     <div class="col">Анонс: {{event.about}}</div>
-                    <div class="col">Дата: {{event.date}} {{event.time}}</div>
+                    <div class="col">Дата: {{event.date}}</div>
+                    <div class="col"> <a href="{{ '/company?id=%s'%event.company_id|urlencode }}">Тусовка: {{company_name}}</a></div>
                     {% if event.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}    
         </div>
             {% if event.avatar == '' %}

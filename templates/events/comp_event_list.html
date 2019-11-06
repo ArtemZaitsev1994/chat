@@ -10,10 +10,15 @@
     </a>
     {% for e in events %}
     <div class="row" {% if e.private %}style="background: yellow"{% endif %}>
-        <div class="col-1"></div> 
+        <div class="col-2"></div> 
         <div class="col-8">
-            <a href="{{ '/comp_event?id=%s'%e._id|urlencode }}" class='row'>
-                <div class="col-3 pic"><img src="{{ static('photo/main.gif') }}"></div>
+                
+            {% if e.avatar == '' %}
+                <h2>ТусЭ</h2>
+            {% else %}
+            <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(e._id, e.avatar)) }}"></div>
+            {% endif %}
+                <a href="{{ '/comp_event?id=%s'%e._id|urlencode }}" class='row'>
                 <div class="col-5">
                     <div class="col">Название:{{e.name}}</div>
                     <div class="col">Анонс:{{e.about}}</div>
@@ -21,6 +26,7 @@
                     {% if e.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}
                 </div>
             </a>
+        <hr>
         </div>    
     </div>
     {% endfor %}

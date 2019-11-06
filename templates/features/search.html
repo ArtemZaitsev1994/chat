@@ -26,27 +26,17 @@
     <div class="row">
         <div class="col-2"></div>
         <div class="col-8" style='overflow: auto; height: 580px'>
-            {% for e in events %}
-            <div class="row" {% if e.private %}style="background: yellow"{% endif %}>
-                <div class="col-2"></div> 
-                <div class="col-8">
-                    В компании {{companys[e.company_id]}} создан новый ивент!
-                    {% if e.avatar == '' %}
-                        <h2>ТусЭ</h2>
-                    {% else %}
-                    <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(e._id, e.avatar)) }}"></div>
-                    {% endif %}
-                        <a href="{{ '/comp_event?id=%s'%e._id|urlencode }}" class='row'>
-                        <div class="col-5">
-                            <div class="col">Название:{{e.name}}</div>
-                            <div class="col">Анонс:{{e.about}}</div>
-                            <div class="col">Дата:{{e.date}} {{e.time}}</div>
-                            {% if e.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}
-                        </div>
-                    </a>
-                <hr>
-                </div>    
-            </div>
+            {% for item in items %}
+                <div>
+                <a href="{{ '/company?id=%s'%item._id|urlencode }}">
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-{% if not item.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
+                        id="user_{{item.name}}">
+                            {{item.name}} admin:{{item.admin}} | {% if not item.private %}открытая{% else %}закрытая{% endif %} ТусЭ
+                    </button>
+                </a>
+                </div>
             {% endfor %}
         </div>   
     </div>

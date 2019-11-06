@@ -76,7 +76,8 @@ class CompEvent(web.View):
         context = {
             'access': self_id in comp['users'],
             'event': event,
-            'own_login': login
+            'own_login': login,
+            'company_name': comp['name'] 
         }
         return context
 
@@ -87,22 +88,35 @@ class Photo(web.View):
         if data['photo'] == b'':
             return web.HTTPFound('/comp_event')
 
-        event = self.request.app['models']['event']
-        e = await event.get_event(data['event_id'])
+        rel_url = str(self.request.rel_url)
 
         photo = self.request.app['models']['photo']
-        filename = str(await photo.create_photo(data['event_id']))
+        if rel_url == '/user_avatar':
+            user = self.request.app['models']['user']
+            user.id = data['user_id']
+            u = await user.check_user()
+            filename = str(await photo.create_avatar(data['user_id']))
+            direction = os.path.join(self.request.app['avatar_dir'], f'{data["user_id"]}/')
+        elif rel_url == r'/photo':
+            event = self.request.app['models']['event']
+            e = await event.get_event(data['event_id'])
+            filename = str(await photo.create_photo(data['event_id']))
+            direction = os.path.join(self.request.app['photo_dir'], f'{data["event_id"]}/')
+            
         filename = f'{filename}.{data["photo"].filename.split(".")[-1]}'
         input_file = data['photo'].file
-        event_dir = os.path.join(self.request.app['photo_dir'], f'{data["event_id"]}/')
-        if not os.path.exists(event_dir):
-            os.makedirs(event_dir)
 
-        with open(os.path.join(event_dir, filename), 'wb') as f:
+        if not os.path.exists(direction):
+            os.makedirs(direction)
+
+        with open(os.path.join(direction, filename), 'wb') as f:
             f.write(input_file.read())
 
-        await event.add_photo(data['event_id'], filename)
-        if e['avatar'] == '':
-            await event.add_avatar(data['event_id'], filename)
+        if rel_url == '/user_avatar':
+            await user.set_avatar(data['user_id'], filename)
+        elif rel_url == r'/photo':
+            await event.add_photo(data['event_id'], filename)
+            if e['avatar'] == '':
+                await event.add_avatar(data['event_id'], filename)
 
         return web.Response()
