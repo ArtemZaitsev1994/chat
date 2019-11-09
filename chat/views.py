@@ -111,6 +111,50 @@ async def update_unread(request):
     return web.json_response(is_online)
 
 
+class Contacts(web.View):
+    @aiohttp_jinja2.template('chat/contacts.html')
+    async def get(self):
+        """
+        Контакты, с которыми есть чат или добавлены в контакты
+        """
+        user = self.request.app['models']['user']
+        company = self.request.app['models']['company']
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        u = await user.get_user(self_id)
+        contacts = await user.get_users(u['contacts'])
+        companys = await company.get_companys_by_user(self_id)
+        print(u)
+        return {'contacts': contacts, 'own_login': login, 'companys': companys}
+
+    async def put(self):
+        """
+        Добавить пользователя в контакты
+        """
+        user = self.request.app['models']['user']
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        contact_id = (await self.request.json())['user_id']
+        if await user.add_contact(self_id, contact_id):
+            return web.json_response(True)
+        return web.json_response(False)
+
+    async def delete(self):
+        """
+        Удалить пользователя из списка контактов
+        """
+        user = self.request.app['models']['user']
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        contact_id = (await self.request.json())['user_id']
+        if await user.delete_contact(self_id, contact_id):
+            return web.json_response(True)
+        return web.json_response(False)
+
+
 class UserChatCompany(web.View):
     async def post(self):
         """

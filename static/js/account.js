@@ -13,8 +13,52 @@ $(document).ready(function(){
         $('#success').html('Данные успешно измененны.');
     }
 
+    $('#add_contact').on('click', function() {
+        user_id = this.getAttribute('user_id')
+        if (this.getAttribute('do') == 'add'){
+            data = {
+                'user_id': user_id
+            }
+            $.ajax({
+                dataType: 'json',
+                url: '/contacts',
+                type: 'PUT',
+                data: JSON.stringify(data),
+                success: function(data) {
+                    console.log(data)
+                    if (data){
+                        $('#add_contact').attr('do', 'del')
+                        $(`#add_contact`).html('<input class="btn btn-danger btn-sm exclude" title="Исключить" type="button" value="★ Удалить из контактов">')
+                     } else {
+                        showError('Ошибка на стороне сервера')
+                    }
+                }
+            });
+
+        } else {
+            data = {
+                'user_id': user_id
+            }
+            $.ajax({
+                dataType: 'json',
+                url: '/contacts',
+                type: 'DELETE',
+                data: JSON.stringify(data),
+                success: function(data) {
+                    console.log(data)
+                    if (data){
+                        $('#add_contact').attr('do', 'add')
+                        $(`#add_contact`).html('<input class="btn btn-primary btn-sm exclude" title="Исключить" type="button" value="★ Добавить в контакты">')
+                     } else {
+                        showError('Ошибка на стороне сервера')
+                    }
+                }
+            });
+        }
+
+    })
+
     $('#submit').click(function(){
-        console.log('asd')
         errors = ''
         invalid_fields = []
         $(':invalid').each(function(){

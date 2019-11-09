@@ -36,6 +36,20 @@ class User():
             u['_id'] = str(u['_id'])
         return users
 
+    async def add_contact(self, user_id, _id):
+        result = await self.collection.update(
+            {'_id': ObjectId(user_id) },
+            {'$addToSet': {'contacts': _id}}
+        )
+        return result
+
+    async def delete_contact(self, user_id, _id):
+        result = await self.collection.update(
+            {'_id': ObjectId(user_id) },
+            {'$pull': {'contacts': _id}},
+        )
+        return result
+
     async def get_users(self, users_list, **kw):
         result = await self.collection.find({'_id':{'$in': [ObjectId(y) for y in users_list]}}).to_list(length=None)
         return result
@@ -50,15 +64,16 @@ class User():
                 'password': self.password,
                 'about': self.about,
                 'avatar': self.avatar,
+                'contacts': [],
             })
         else:
             result = 'User exists'
         return result
 
     async def update_user(self, _id, data):
-        result = await self.collection.replace_one(
+        result = await self.collection.update(
             {'_id': ObjectId(_id) },
-            data
+            {'$set': data}
         )
         return result
 

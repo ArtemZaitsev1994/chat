@@ -199,6 +199,13 @@
                 <h2>Avatar</h2>
             {% endif %}
              <hr>
+             <div id="add_contact" do="{% if in_contacts %}del{% else %}add{% endif %}"user_id={{user._id}}>
+                {% if in_contacts %}
+                    <input class="btn btn-danger btn-sm exclude" title="Исключить" type="button" value="★ Удалить из контактов">
+                {% else %}
+                    <input class="btn btn-primary btn-sm exclude" title="Исключить" type="button" value="★ Добавить в контакты">
+                {% endif %}
+             </div>
         </div>
     {% endif %}
     </div>
