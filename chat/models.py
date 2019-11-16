@@ -126,7 +126,7 @@ class UnreadMessage():
 
     async def add_unread(self, _id, user_id):
         """
-        увеличить счетчик непрочитанных сообщений внутри одной комнаты
+        увеличить счетчик непрочитанных сообщений внутри одной комнаты компании
 
         Args:
             _id - ID записи в базе
@@ -139,7 +139,7 @@ class UnreadMessage():
 
     async def add_unread_user_chat(self, from_user, to_user):
         """
-        увеличить счетчик непрочитанных сообщений внутри одной комнаты
+        увеличить счетчик непрочитанных сообщений внутри одной комнаты пользователя
 
         Args:
             from_user - ID пользователя, от которого сообщение
@@ -191,15 +191,18 @@ class UnreadMessage():
         messages = self.collection.find({'from_user': user_id})
         return await messages.to_list(length=None)
 
-    # async def delete(self, user_id, from_user):
-    #     """
-    #     удалить запись - ползователь прочитал сообщения
+    async def delete(self, user_id, from_user):
+        """
+        удалить запись - ползователь прочитал сообщения
 
-    #     Args:
-    #         user_id - ID пользователя, который прочитал сообщения
-    #         from_user - ID пользователя, чьи сообщения прочитали
-    #     """
-    #     await self.collection.delete_many({'to_user': user_id, 'from_user': from_user})
+        Args:
+            user_id - ID пользователя, который прочитал сообщения
+            from_user - ID пользователя, чьи сообщения прочитали
+        """
+        return await self.collection.update(
+            {'from_user': from_user, 'to_user': user_id},
+            {'$inc': {'count': 1}}
+        )
 
     async def delete_by_company(self, company_id, user_id):
         """

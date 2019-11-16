@@ -1,7 +1,8 @@
 from chat.views import (
     ChatList, CompanyWebSocket, main_redirect,
     update_unread, UserChat, UserChatCompany,
-    update_unread_company, CommonWebSocket, Contacts
+    update_unread_company, CommonWebSocket, Contacts,
+    PrivateChat
 )
 from auth.views import Login, SignIn, SignOut, AccountDetails
 from about.views import About, drop_all
@@ -11,13 +12,14 @@ from invite.views import Invite
 from features.views import Search
 
 routes = [
-    ('GET',  '/',           main_redirect,    'main_redirect'),
-    ('GET',  '/chat',       ChatList,         'chat_list'),
-    ('GET',  '/ws_company', CompanyWebSocket, 'chat'),
-    ('GET',  '/ws_common',  CommonWebSocket,  'common_websocket'),
-    ('POST', '/update',     update_unread,    'update'),
-    ('POST', '/user_chat',  UserChat,         'user_chat'),
-    ('*',    '/contacts',   Contacts,         'contacts'),
+    ('GET',  '/',             main_redirect,    'main_redirect'),
+    ('GET',  '/chat',         ChatList,         'chat_list'),
+    ('GET',  '/ws_company',   CompanyWebSocket, 'chat'),
+    ('GET',  '/ws_common',    CommonWebSocket,  'common_websocket'),
+    ('POST', '/update',       update_unread,    'update'),
+    ('POST', '/user_chat',    UserChat,         'user_chat'),
+    ('*',    '/contacts',     Contacts,         'contacts'),
+    ('*',    '/private_chat', PrivateChat,      'private_chat'),
     ('POST', '/user_chat_company',      UserChatCompany,       'user_chat_company'),
     ('POST', '/update_unread_company',  update_unread_company, 'update_unread_company'),
 

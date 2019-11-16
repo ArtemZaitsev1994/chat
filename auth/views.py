@@ -85,12 +85,9 @@ class AccountDetails(web.View):
             account = await user.get_user(self_id)
             access = True
 
-        print(user_id in account['contacts'])
-        print(user_id)
-        print(account['contacts'])
         context_data = {
             'user': account,
-            'in_contacts': user_id in account['contacts'],
+            'in_contacts': self_id in account['contacts'],
             'own_login': login,
             'is_socket': True,
             'self_id': self_id,

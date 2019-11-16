@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Main Chat page
+{% endblock %}
+
+{% block head %}
+    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="container" id='messages_box'>
+    <meta id="my-data" 
+        data-name="{{chat_name}}"
+        data-to_user="{{to_user}}"
+        data-to_user_login="{{to_user_login}}"
+        data-own_login="{{own_login}}"
+        data-self_id="{{self_id}}"
+        data-last_mess_author="{{last_mess_author}}"
+    >
+
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-2">
+            <div id="chat_with">{{to_user_login}}</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2">
+        </div>    
+        <div class="col-8">
+            <div id='subscribe'>
+                {% for mes in messages %}
+                  <p {% if mes.unread %}class="unread"{% endif %}>[{{ mes['time'].strftime('%H:%M:%S') }}] 
+                    <span class="user">{{ mes['from_user'] }}</span>: {{ mes['msg'] }}
+                  </p>
+                {% endfor %}
+            </div>
+                <p>
+                    <div class="mb-3">
+                        <label for="validationTextarea">Сообщение</label>
+                        <textarea type="text" class="form-control" id="message" placeholder="Required example textarea" required></textarea>
+                    </div>
+                    <input class="btn btn-primary" type="submit" id='submit' value="Send">
+                </p>
+        </div>    
+    </div>
+</div>
+{% endblock %}
+
+{% block ws %}
+    <script src="{{ static('js/private_chat.js') }}"></script>
+{% endblock %}
+{% block footer %}
+{% endblock %}

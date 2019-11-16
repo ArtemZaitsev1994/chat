@@ -68,7 +68,9 @@
 </body>
 <footer>
   <!-- <script src="{{ static('js/common_websocket.js') }}"></script> -->
-  <script src="{{ static('js/main.js') }}"></script>
+  {% block ws %}
+    <script src="{{ static('js/main.js') }}"></script>
+  {% endblock %}
     {% block footer %}
     {% endblock %}
 </footer>

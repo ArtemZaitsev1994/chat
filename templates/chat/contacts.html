@@ -22,23 +22,24 @@
         <div class="col-8"  id="companys">
              <ul>
                 {% for user in contacts %}
-                
+                    
                 <li>
-                    <div class='row'>    
-                        <div class="col-8">
-                            <a href="{{ '/account?id=%s'%user._id|urlencode }}">{{ user.login }}</a>
-                            {% if user.avatar %}
-                                <img style="width: 70px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
-                            {% else %}
-                                <h2>Avatar</h2>
-                            {% endif %}
-                        </div>
-                        <hr>
-                        <div class="col-4">   
-                            <div id="add_contact" do="{% if in_contacts %}del{% else %}add{% endif %}"user_id={{user._id}}>
-                                    <input class="btn btn-danger btn-sm exclude" title="Исключить" type="button" value="★ Удалить из контактов">
-                             </div>
-                        </div>
+                    <div class='row'>
+                            <div class="col-8">
+                                <a href="{{ '/account?id=%s'%user._id|urlencode }}">{{ user.login }}</a>
+                                {% if user.avatar %}
+                                    <img style="width: 70px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
+                                {% else %}
+                                    <h2>Avatar</h2>
+                                {% endif %}
+                                <a href="{{ '/private_chat?user_id=%s'%user._id|urlencode }}">Чат</a>
+                            </div>
+                            <hr>
+                            <div class="col-4">   
+                                <div id="add_contact" do="{% if in_contacts %}del{% else %}add{% endif %}"user_id={{user._id}}>
+                                        <input class="btn btn-danger btn-sm exclude" title="Исключить" type="button" value="★ Удалить из контактов">
+                                 </div>
+                            </div>
                     </div>
                 </li>
                 {% endfor %}

@@ -19,7 +19,7 @@ def get_context(func):
         r_unread = await unread.get_messages_recieved(self_id)
         unread_counter = collections.Counter()
 
-        online_id = '#'.join([x[0] for x in self.request.app['online'].values()])
+        # online_id = '#'.join([x[0] for x in self.request.app['online'].values()])
         context = {
             'user': user,
             'users': users,
@@ -28,7 +28,7 @@ def get_context(func):
             'login': login,
             'unread': unread,
             'unread_counter': unread_counter,
-            'online_id': online_id,
+            # 'online_id': online_id,
         }
         return await func(self, context)
     return wrap
