@@ -3,33 +3,31 @@
 {% block content %}
 <div class="container">
     <h4>
-    Хотят вступить.
+        Хотят вступить.
     </h4>
     <a href="{{ '/company?id=%s'%company_id|urlencode }}">
         {{company_name}}
     </a>
     {% for inv in invites %}
-    <div class="row" >
-        <div class="col-1"></div> 
-        <div class="col-8">
-            <div class="col-5">
-                <a href="#">
-                    <div class="col">{{inv.login}}</div>
-                </a>
+        <div class="row" >
+            <div class="col-1"></div> 
+            <div class="col-8">
+                <div class="col-5">
+                    <a href="#">
+                        <div class="col">{{inv.login}}</div>
+                    </a>
                     {% if inv.note %}
                         <div class="col">Записка: {{inv.note}}</div>
                     {% endif %}
-            </div>
+                </div>
                 <input class="btn btn-primary accept_inv" id='accept' title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Принять">
                 <input class="btn btn-primary decline_inv" id='decline' title="Создать ивент" type="button" value="Отклонить">
-        </div>    
-    </div>
+            </div>    
+        </div>
     {% endfor %}
 </div>
 {% endblock %}
-
-<script src="{{ static('js/invite.js') }}"></script>
-<link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
-
+    <script src="{{ static('js/invite.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
 {% block footer %}
 {% endblock %}

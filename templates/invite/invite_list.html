@@ -1,39 +1,38 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
+    <div class="container">
 
-    <meta id="company-data" 
+        <meta id="company-data" 
         data-company_id="{{company_id}}"
-    >
-    <h4>
-    Хотят вступить.
-    </h4>
-    <a href="{{ '/company?id=%s'%company_id|urlencode }}">
-        {{company_name}}
-    </a>
-    {% for inv in invites %}
-    <div class="row" id='inv_{{inv.user_id}}'>
-        <div class="col-1"></div> 
-        <div class="col-8">
-            <div class="col-5">
-                <a href="#">
-                    <div class="col">{{inv.login}}</div>
-                </a>
-                    {% if inv.note %}
-                        <div class="col">Записка: {{inv.note}}</div>
-                    {% endif %}
+        >
+        <h4>
+            Хотят вступить.
+        </h4>
+        <a href="{{ '/company?id=%s'%company_id|urlencode }}">
+            {{company_name}}
+        </a>
+        {% for inv in invites %}
+            <div class="row" id='inv_{{inv.user_id}}'>
+                <div class="col-1"></div> 
+                <div class="col-8">
+                    <div class="col-5">
+                        <a href="#">
+                            <div class="col">{{inv.login}}</div>
+                        </a>
+                        {% if inv.note %}
+                            <div class="col">Записка: {{inv.note}}</div>
+                        {% endif %}
+                    </div>
+                    <input class="btn btn-primary accept_inv" title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Принять">
+                    <input class="btn btn-primary decline_inv" id='decline' title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Отклонить">
+                </div>    
             </div>
-                <input class="btn btn-primary accept_inv" title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Принять">
-                <input class="btn btn-primary decline_inv" id='decline' title="Создать ивент" user_id="{{inv.user_id}}" type="button" value="Отклонить">
-        </div>    
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
 {% endblock %}
 
-
 {% block footer %}
-<script src="{{ static('js/invite.js') }}"></script>
-<link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
+    <script src="{{ static('js/invite.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
 {% endblock %}

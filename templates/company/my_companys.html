@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block head %}
-    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+<link href="{{ static('css/chat.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
 <div class="container" id='messages_box'>
@@ -21,58 +21,57 @@
         <div class="col-2"></div>
         <div class="col-8"  id="companys">
             {% for comp in my_companys %}
-                <div>
+            <div>
                 <a href="{{ '/company?id=%s'%comp._id|urlencode }}">
                     <button 
-                        type="button" 
-                        class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
-                        id="user_{{comp.name}}">
-                            {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
+                    type="button" 
+                    class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
+                    id="user_{{comp.name}}">
+                        {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
                     </button>
                 </a>
-                </div>
+            </div>
             {% endfor %}
         </div>
 
-        <div class="col-8" id="create_block" style="display: none">
-            <form autocomplete="on">
-                <div><h4>Создание новой Компашки</h4></div>
-                <div id="error" style="color: red;"></div>
-                <div id="success" style="color: green;"></div>
-                <div class="form-group">
-                    <label>Введите имя ТусЭ
-                        <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Login" id="name" required>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>О ТусЭ
-                        <input type="text" class="form-control" placeholder="About" id="about" required>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Закрытая
-                        <input type="checkbox" class="form-control", id="private">
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Введите пароль
-                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password" required disabled>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Подтвердите пароль
-                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password" required disabled>
-                    </label>
-                </div>
-                <p>
-                    <input class="btn btn-primary" id="submit" title="Создать ТусЭ" type="button" value="Создать ТусЭ">
-                </p>
-            </form>
-        </div>
+    <div class="col-8" id="create_block" style="display: none">
+        <form autocomplete="on">
+            <div><h4>Создание новой Компашки</h4></div>
+            <div id="error" style="color: red;"></div>
+            <div id="success" style="color: green;"></div>
+            <div class="form-group">
+                <label>Введите имя ТусЭ
+                    <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Login" id="name" required>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>О ТусЭ
+                    <input type="text" class="form-control" placeholder="About" id="about" required>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Закрытая
+                    <input type="checkbox" class="form-control", id="private">
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Введите пароль
+                    <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password" required disabled>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Подтвердите пароль
+                    <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password" required disabled>
+                </label>
+            </div>
+            <p>
+                <input class="btn btn-primary" id="submit" title="Создать ТусЭ" type="button" value="Создать ТусЭ">
+            </p>
+        </form>
     </div>
 </div>
+</div>
 {% endblock %}
-
 {% block footer %}
-<script type="text/javascript" src="{{ static('js/company.js') }}"></script>
+    <script type="text/javascript" src="{{ static('js/company.js') }}"></script>
 {% endblock %}

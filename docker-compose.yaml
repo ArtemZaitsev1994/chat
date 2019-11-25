@@ -6,7 +6,24 @@ services:
         ports: 
           - 8080:8080
         depends_on:
-            - mongodb
+          - mongodb
+
+      ws_server:
+        # image: golang:1.13.4-alpine3.10
+        build: ./go_back/
+        container_name: "golang"
+        # volumes:
+        #   - ./go_back:/go/src/backend_chat
+        # working_dir: /go/src/backend_chat
+        # command: ./go_back
+        ports:
+          - 8081:8081
+        environment:
+          WAIT_HOSTS: rabbitmq:5672, redis:6379, mongodb:27017
+        depends_on:
+          - redis
+          - rabbitmq
+
       mongodb:
         image: mongo:latest
         container_name: "mongodb"
@@ -17,4 +34,30 @@ services:
           - ./data/db:/data/db
         ports:
             - 27017:27017
-        command: mongod 
+        command: mongod
+
+      redis:
+        image: redis:latest
+        container_name: "redis"
+        ports:
+          - 6379:6379
+
+      rabbitmq:
+        image: rabbitmq:latest
+        container_name: "rabbit"
+        ports:
+          - 5672:5672
+    
+      nginx:
+        image: nginx:latest
+        container_name: "nginx"
+        ports: 
+          - 8885:8885
+        volumes:
+          - ./nginx/my.conf:/etc/nginx/conf.d/my.conf
+        links:
+          - server
+          - ws_server
+        depends_on:
+            - server
+            - ws_server

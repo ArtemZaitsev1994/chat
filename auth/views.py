@@ -1,6 +1,7 @@
 import json
 import collections
 import aiohttp_jinja2
+import aioredis
 from time import time
 from bson.objectid import ObjectId
 from aiohttp import web

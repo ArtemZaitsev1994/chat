@@ -48,6 +48,10 @@ Main Chat page
 {% endblock %}
 
 {% block ws %}
+    <!-- <script src="{{ static('js/common_websocket.js') }}"></script> -->
+    <script src="{{ static('js/websocket_chat_go.js') }}"></script>
+{% endblock %}
+{% block ws %}
     <script src="{{ static('js/private_chat.js') }}"></script>
 {% endblock %}
 {% block footer %}

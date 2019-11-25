@@ -53,6 +53,7 @@ class ChatList(web.View):
         """
         Получение информации о чате внутри одной тусовки
         """
+        print(1)
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
         company = self.request.app['models']['company']

@@ -14,8 +14,8 @@ from features.views import Search
 routes = [
     ('GET',  '/',             main_redirect,    'main_redirect'),
     ('GET',  '/chat',         ChatList,         'chat_list'),
-    ('GET',  '/ws_company',   CompanyWebSocket, 'chat'),
-    ('GET',  '/ws_common',    CommonWebSocket,  'common_websocket'),
+    # ('GET',  '/ws_company',   CompanyWebSocket, 'chat'),
+    # ('GET',  '/ws_common',    CommonWebSocket,  'common_websocket'),
     ('POST', '/update',       update_unread,    'update'),
     ('POST', '/user_chat',    UserChat,         'user_chat'),
     ('*',    '/contacts',     Contacts,         'contacts'),

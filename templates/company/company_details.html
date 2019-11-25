@@ -5,109 +5,108 @@
 {% endblock %}
 
 {% block head %}
-    <link href="{{ static('css/chat.css') }}" rel="stylesheet">
+<link href="{{ static('css/chat.css') }}" rel="stylesheet">
 {% endblock %}
 {% block content %}
 <div class="container" id='messages_box'>
-    <meta id="company-data" 
-        data-company_id="{{company._id}}"
-    >
+<meta id="company-data" 
+data-company_id="{{company._id}}"
+>
 {% if access %}
-    <div><a href="{{ '/company?id=%s'%company._id|urlencode }}">
-    <h4>{{company.name}}</h4></div></a>
-    <div class="row">
-        <div class="col-1"></div>
-        <div class="col-5">
-            <form autocomplete="on">
-                <div id="error" style="color: red;"></div>
-                <div id="success" style="color: green;"></div>
-                <div class="form-group">
-                    <label>Сменить название:
-                        <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Login" id="name" value="{{company.name}}"required>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>О ТусЭ:
-                        <input type="text" class="form-control" placeholder="About" id="about" value="{{ company.about }}" required>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Закрытая
-                        <input type="checkbox" class="form-control", id="private" {% if company.private %}checked{%endif%}>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Сменить пароль
-                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password" required {% if not company.private %}disabled{%endif%}>
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label>Подтвердите пароль
-                        <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password" required {% if not company.private %}disabled{%endif%}>
-                    </label>
-                </div>
-                <p>
-                    <input class="btn btn-primary" id="submit" title="Сохранить изменения" type="button" value="Сохранить изменения">
-                </p>
-            </form>
-        </div>
-        <div class="col-5">
-            <ul>
-                {% for user in company.users %}
-                
-                <li>
-                    <div class='row'>    
-                        <div class="col-8">
-                            <a href="{{ '/account?id=%s'%user._id|urlencode }}">{{ user.login }}</a>
-                            {% if user.avatar %}
-                                <img style="width: 70px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
-                            {% else %}
-                                <h2>Avatar</h2>
-                            {% endif %}
-                        </div>
-                        <hr>
-                        <div class="col-4">   
-                            <input class="btn btn-primary btn-sm exclude" id="exclude_{{user._id}}" title="Исключить" user_id={{user._id}} type="button" do='delete' value="Исключить">
-                        </div>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+<div><a href="{{ '/company?id=%s'%company._id|urlencode }}">
+<h4>{{company.name}}</h4></div></a>
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-5">
+        <form autocomplete="on">
+            <div id="error" style="color: red;"></div>
+            <div id="success" style="color: green;"></div>
+            <div class="form-group">
+                <label>Сменить название:
+                    <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Login" id="name" value="{{company.name}}"required>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>О ТусЭ:
+                    <input type="text" class="form-control" placeholder="About" id="about" value="{{ company.about }}" required>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Закрытая
+                    <input type="checkbox" class="form-control", id="private" {% if company.private %}checked{%endif%}>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Сменить пароль
+                    <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="password" required {% if not company.private %}disabled{%endif%}>
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Подтвердите пароль
+                    <input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{4,}" placeholder="Password", id="confirm_password" required {% if not company.private %}disabled{%endif%}>
+                </label>
+            </div>
+            <p>
+                <input class="btn btn-primary" id="submit" title="Сохранить изменения" type="button" value="Сохранить изменения">
+            </p>
+        </form>
     </div>
+    <div class="col-5">
+        <ul>
+            {% for user in company.users %}
+            <li>
+                <div class='row'>    
+                    <div class="col-8">
+                        <a href="{{ '/account?id=%s'%user._id|urlencode }}">{{ user.login }}</a>
+                        {% if user.avatar %}
+                        <img style="width: 70px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
+                        {% else %}
+                        <h2>Avatar</h2>
+                        {% endif %}
+                    </div>
+                    <hr>
+                    <div class="col-4">   
+                        <input class="btn btn-primary btn-sm exclude" id="exclude_{{user._id}}" title="Исключить" user_id={{user._id}} type="button" do='delete' value="Исключить">
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 {% else %}
-    <div class="row">
-        <div class="col-1"></div>
-        <div class="col-5">
-                <div class="form-group">
-                    <p>Название: {{company.name}}</p>
-                </div>
-                <div class="form-group">
-                    <p>О ТусЭ: {{ company.about }}</p>
-                </div>
-                <div class="form-group">
-                    <p>{% if company.private %}Закрытая{%else%}Открытая{%endif%}</p>
-                </div>
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-5">
+        <div class="form-group">
+            <p>Название: {{company.name}}</p>
         </div>
-        <div class="col-5">
-            <ul>
-                {% for user in company.users %}
-                <li>
-                    <div class='row'>    
-                        <div class="col-8">
-                            <a href="{{ '/account?id=%s'%user._id|urlencode }}">{{ user.login }}</a>
-                            {% if user.avatar %}
-                                <img style="width: 100px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
-                            {% else %}
-                                <h2>Avatar</h2>
-                            {% endif %}
-                        </div>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
+        <div class="form-group">
+            <p>О ТусЭ: {{ company.about }}</p>
+        </div>
+        <div class="form-group">
+            <p>{% if company.private %}Закрытая{%else%}Открытая{%endif%}</p>
         </div>
     </div>
+    <div class="col-5">
+        <ul>
+            {% for user in company.users %}
+            <li>
+                <div class='row'>    
+                    <div class="col-8">
+                        <a href="{{ '/account?id=%s'%user._id|urlencode }}">{{ user.login }}</a>
+                        {% if user.avatar %}
+                        <img style="width: 100px" src="{{ static('photo/users/%s/%s'%(user._id, user.avatar)) }}">
+                        {% else %}
+                        <h2>Avatar</h2>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 
 {% endif %}
 </div>
