@@ -1,28 +1,19 @@
-import json
-import collections
 import os
-import aiohttp_jinja2
 
-from datetime import datetime
-from bson.objectid import ObjectId
+import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
-
-from utils import get_context, get_companys_context
-
 
 
 class Event(web.View):
 
     @aiohttp_jinja2.template('events/event.html')
     async def get(self):
-        event = self.request.app['models']['event']
-        data = {'is_socket': False}
         session = await get_session(self.request)
         login = session.get('login')
 
         company_id = self.request.rel_url.query.get('id')
-        data.update({'company_id': company_id, 'own_login': login})
+        data = {'company_id': company_id, 'own_login': login}
         return data
 
     async def post(self, **kw):
@@ -41,8 +32,7 @@ class Event(web.View):
         self_id = session.get('user')
         event = self.request.app['models']['event']
         if (await event.get_event(data['event_id']))['admin_id'] == self_id:
-            result = await event.delete(data['event_id'])
-            return web.json_response(True)
+            return web.json_response(bool(await event.delete(data['event_id'])))
         return web.json_response({'error': 'Недостаточно прав'})
 
 
@@ -80,6 +70,7 @@ class CompEvent(web.View):
             'company_name': comp['name'] 
         }
         return context
+
 
 class Photo(web.View):
 

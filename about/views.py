@@ -1,9 +1,7 @@
 import aiohttp_jinja2
-import collections
 import aiosmtplib
 
 from aiohttp import web
-from aiohttp_session import get_session
 from email.mime.text import MIMEText
 
 from utils import get_context
@@ -13,7 +11,7 @@ from auth.models import User
 class About(web.View):
     @aiohttp_jinja2.template('about/about.html')
     @get_context
-    async def get(self, data, **kw):
+    async def get(self, data):
 
         photo_path = 'photo/main.gif'
 
@@ -34,7 +32,7 @@ class About(web.View):
         message["To"] = "artz1994@mail.ru"
         message["Subject"] = f'{data["message"]}\n\n\n\n\n\n{data["callback"]}'
         server = aiosmtplib.SMTP('smtp.gmail.com', 587)
-        # TODO: 
+        # TODO:
         await server.connect()
         await server.ehlo()
         await server.starttls()
@@ -48,21 +46,18 @@ class About(web.View):
 async def drop_all(request):
 
     models = {
-        'user':    request.app['models']['user'],
-        'chat':    request.app['models']['message'],
-        'unread':  request.app['models']['unread'],
-        'event':   request.app['models']['event'],
+        'user': request.app['models']['user'],
+        'chat': request.app['models']['message'],
+        'unread': request.app['models']['unread'],
+        'event': request.app['models']['event'],
         'company': request.app['models']['company'],
-        'photo':   request.app['models']['photo'],
+        'photo': request.app['models']['photo'],
     }
     [await i.clear_db() for i in models.values()]
 
-    leo   = User(request.app.db, {'login': 'Leo', 'email': 'leo@mail.ru', 'password': 'qwe123'})
-    lana  = User(request.app.db, {'login': 'Lana', 'email': 'delRay@mail.ru', 'password': 'qwe123'})
+    leo = User(request.app.db, {'login': 'Leo', 'email': 'leo@mail.ru', 'password': 'qwe123'})
+    lana = User(request.app.db, {'login': 'Lana', 'email': 'delRay@mail.ru', 'password': 'qwe123'})
     artem = User(request.app.db, {'login': 'Artem', 'email': 'artz1994@mail.ru', 'password': 'qwe123'})
     await leo.create_user()
     await lana.create_user()
     await artem.create_user()
-
-
-

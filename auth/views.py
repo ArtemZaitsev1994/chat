@@ -1,14 +1,9 @@
-import json
-import collections
 import aiohttp_jinja2
-import aioredis
-from time import time
 from bson.objectid import ObjectId
 from aiohttp import web
 from aiohttp_session import get_session
 
 from auth.models import User
-from utils import get_context
 from auth.utils import redirect, set_session, convert_json
 
 
@@ -16,12 +11,14 @@ class Login(web.View):
 
     @aiohttp_jinja2.template('auth/login.html')
     async def get(self):
+        """Страница входа пользователя"""
         session = await get_session(self.request)
         if session.get('user'):
             redirect(self.request, 'account')
-        return {'is_socket': False}
+        return {}
 
     async def post(self):
+        """Обработка входа пользователя, проверка данных"""
         data = await self.request.post()
         user = User(self.request.app.db, data)
         result = await user.check_user()
@@ -36,12 +33,11 @@ class SignIn(web.View):
 
     @aiohttp_jinja2.template('auth/sign.html')
     async def get(self, **kw):
-        # sesion = await get_session(self.request)
-        # if session.get('user'):
-        #     redirect(self.request, 'main')
-        return {'is_socket': False}
+        """Страница регистрации"""
+        return {}
 
     async def post(self, **kw):
+        """Обработка регистрации пользователя"""
         data = await self.request.post()
         user = User(self.request.app.db, data)
         result = await user.create_user()
@@ -55,6 +51,7 @@ class SignIn(web.View):
 class SignOut(web.View):
 
     async def get(self, **kw):
+        """Выход из аккаунта и редирект на страницу Входа"""
         session = await get_session(self.request)
         if session.get('user'):
             del session['user']
@@ -67,12 +64,13 @@ class AccountDetails(web.View):
 
     @aiohttp_jinja2.template('auth/account.html')
     async def get(self, **kw):
+        """Страница проосмотра данных о пользователе"""
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
+
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
-
 
         user_id = self.request.rel_url.query.get('id')
         if user_id:
@@ -99,11 +97,13 @@ class AccountDetails(web.View):
         return context_data
 
     async def post(self, **kw):
+        """Обновление данных пользователя"""
+        session = await get_session(self.request)
+        self_id = session.get('user')
         user = User(self.request.app.db, {})
 
         data = await self.request.json()
-        session = await get_session(self.request)
-        self_id = session.get('user')
-        login = await user.get_login(self_id)
         await user.update_user(self_id, data)
         return web.json_response({})
+
+
