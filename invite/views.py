@@ -1,15 +1,9 @@
 import json
-import collections
 import os
-import aiohttp_jinja2
 
-from datetime import datetime
-from bson.objectid import ObjectId
+import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
-
-from utils import get_context, get_companys_context
-
 
 
 class Invite(web.View):
@@ -46,7 +40,6 @@ class Invite(web.View):
         session = await get_session(self.request)
 
         self_id = session.get('user')
-        print(await invite.delete(self_id, data['company_id']))
         if await invite.delete(self_id, data['company_id']):
             return web.json_response(True)
         return web.json_response({'error': 'something went wrong'})

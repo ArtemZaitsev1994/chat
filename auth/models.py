@@ -1,13 +1,14 @@
 from typing import List, Dict, Any
 
 from bson.objectid import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from settings import USER_COLLECTION
 
 
 class User():
 
-    def __init__(self, db: TODO, data: Dict[str, Any], **kw):
+    def __init__(self, db: AsyncIOMotorDatabase, data: Dict[str, Any], **kw):
         self.db = db
         self.collection = self.db[USER_COLLECTION]
         self.email = data.get('email')
@@ -17,7 +18,7 @@ class User():
         self.avatar = data.get('about', '')
         self.id = data.get('id')
 
-    async def check_user(self, **kw) -> TODO:
+    async def check_user(self, **kw) -> Dict[str, Any]:
         """Проверка существования юзера"""
         return await self.collection.find_one({'login': self.login})
 
@@ -31,7 +32,7 @@ class User():
         result =  await self.collection.find_one({'_id': ObjectId(user_id)})
         return result['login']
 
-    async def get_user(self, user_id: str) -> TODO:
+    async def get_user(self, user_id: str) -> Dict[str, Any]:
         """
         Получить пользователя по ID
 
@@ -87,7 +88,7 @@ class User():
         )
         return result
 
-    async def get_users(self, users_list: list, **kw) -> List[TODO]:
+    async def get_users(self, users_list: list, **kw) -> List[Dict[str, Any]]:
         """
         Получить список юзеров по списку ID
 

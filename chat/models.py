@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from bson.objectid import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from settings import MESSAGE_COLLECTION, UNREAD_COLLECTION
 
@@ -11,7 +12,7 @@ class Message():
     Класс сообщения в базе
     """
 
-    def __init__(self, db, **kwargs):
+    def __init__(self, db: AsyncIOMotorDatabase, **kwargs):
         self.collection = db[MESSAGE_COLLECTION]
 
 
@@ -53,7 +54,7 @@ class Message():
         return result
 
 
-    async def get_messages(self, chat_name: str) -> List[TODO]:
+    async def get_messages(self, chat_name: str) -> List[Dict[str, Any]]:
         """
         Получить сообщения по имени чата
 
@@ -64,7 +65,7 @@ class Message():
         return await messages.to_list(length=None)
 
 
-    async def get_messages_by_company(self, company_id: str) -> List[TODO]:
+    async def get_messages_by_company(self, company_id: str) -> List[Dict[str, Any]]:
         """
         Получить сообщения по ID компании
 
@@ -82,7 +83,7 @@ class Message():
 class UnreadMessage():
     """Класс с определеннием непрочитанных сообщений внутри одной чат-комнаты"""
 
-    def __init__(self, db, **kwargs):
+    def __init__(self, db: AsyncIOMotorDatabase, **kwargs):
         self.collection = db[UNREAD_COLLECTION]
 
 
@@ -122,7 +123,7 @@ class UnreadMessage():
         return result
 
 
-    async def get_unread(self, _id: ObjectId) -> TODO:
+    async def get_unread(self, _id: ObjectId) -> Dict[str, Any]:
         """
         Получить сообщения по ID записи
 
@@ -132,7 +133,7 @@ class UnreadMessage():
         return await self.collection.find_one({'_id': _id})
 
 
-    async def add_unread(self, _id: str, user_id: str) - bool:
+    async def add_unread(self, _id: str, user_id: str) -> bool:
         """
         Увеличить счетчик непрочитанных сообщений внутри одной комнаты компании у одного пользователя
 
@@ -183,7 +184,7 @@ class UnreadMessage():
         return await self.collection.find_one({'to_company': company_id, 'to_user': to_user})
 
 
-    async def get_unread_user_chat(self, from_user: str, to_user: str) -> TODO:
+    async def get_unread_user_chat(self, from_user: str, to_user: str) -> Dict[str, Any]:
         """
         получить запись о непрочитанных сообщениях
 
@@ -227,7 +228,7 @@ class UnreadMessage():
         Args:
             company_id - ID компании
         """
-        return = await self.collection.update(
+        return await self.collection.update(
             {'to_company': company_id, 'to_user': user_id},
             {'count': 0}
         )

@@ -4,24 +4,25 @@ import aiosmtplib
 from aiohttp import web
 from email.mime.text import MIMEText
 
-from utils import get_context
 from auth.models import User
 
 
 class About(web.View):
     @aiohttp_jinja2.template('about/about.html')
-    @get_context
     async def get(self, data):
+        PHOTO_PATH = 'photo/main.gif'
 
-        photo_path = 'photo/main.gif'
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        user = self.request.app['models']['user']
+        users = await user.get_all_users()
 
         context = {
-            'users': data['users'],
-            'own_login': data['login'],
-            'photo_path': photo_path,
-            'unread_counter': data['unread_counter'],
-            'is_socket': True,
-            'self_id': data['self_id']
+            'users': users,
+            'own_login': login,
+            'photo_path': PHOTO_PATH,
+            'self_id': self_id
         }
         return context
 
