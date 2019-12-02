@@ -30,7 +30,7 @@ class Company():
         company = await self.get_company(company_id)
         return company and user_id == company['admin_id']
 
-    async def create_company(self, data: str, admin_id: str, **kw) -> bool:
+    async def create_company(self, data: str, admin_id: str) -> bool:
         company = await self.get_company_by_name(data['name'])
         result = False
         if not company:

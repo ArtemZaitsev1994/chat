@@ -16,7 +16,7 @@ class Event(web.View):
         data = {'company_id': company_id, 'own_login': login}
         return data
 
-    async def post(self, **kw):
+    async def post(self,):
         event = self.request.app['models']['event']
 
         data = await self.request.json()
@@ -26,7 +26,7 @@ class Event(web.View):
             return web.json_response(True)
         return web.json_response({'error': 'Ивент с таким именем уже есть.'})
     
-    async def delete(self, **kw):
+    async def delete(self):
         data = await self.request.json()
         session = await get_session(self.request)
         self_id = session.get('user')

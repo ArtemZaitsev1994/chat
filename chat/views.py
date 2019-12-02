@@ -16,7 +16,7 @@ async def main_redirect(request):
 
 class PrivateChat(web.View):
     @aiohttp_jinja2.template('chat/private_chat.html')
-    async def get(self, **kw):
+    async def get(self):
         """Информация о приватном чате"""
         user = self.request.app['models']['user']
 
@@ -39,7 +39,7 @@ class PrivateChat(web.View):
 
 class ChatList(web.View):
     @aiohttp_jinja2.template('chat/index.html')
-    async def get(self, **kw):
+    async def get(self):
         """Получение информации о чате внутри одной тусовки"""
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']

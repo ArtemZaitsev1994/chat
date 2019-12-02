@@ -15,7 +15,7 @@ class MyCompany(web.View):
         data = {'is_socket': False, 'own_login': login, 'my_companys': my_companys}
         return data
 
-    async def post(self, **kw):
+    async def post(self):
         session = await get_session(self.request)
         self_id = session.get('user')
 
@@ -25,7 +25,7 @@ class MyCompany(web.View):
             return web.json_response(True)
         return web.json_response({'error': 'ТусЭ уже есть.'})
 
-    async def delete(self, **kw):
+    async def delete(self):
         session = await get_session(self.request)
         self_id = session.get('user')
 
@@ -59,7 +59,7 @@ class AllCompanys(web.View):
 class Company(web.View):
 
     @aiohttp_jinja2.template('/company/company.html')
-    async def get(self, **kw):
+    async def get(self):
         company = self.request.app['models']['company']
         unread = self.request.app['models']['unread']
         user = self.request.app['models']['user']
@@ -93,7 +93,7 @@ class Company(web.View):
 
         return data
 
-    async def post(self, **kw):
+    async def post(self):
         data = await self.request.json()
         session = await get_session(self.request)
         self_id = session.get('user')
@@ -105,7 +105,7 @@ class Company(web.View):
         result = await company.add_user_to_comp(data['company_id'], self_id)
         return web.json_response(bool(result))
 
-    async def delete(self, **kw):
+    async def delete(self):
         session = await get_session(self.request)
         self_id = session.get('user')
         company = self.request.app['models']['company']

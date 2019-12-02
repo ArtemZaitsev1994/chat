@@ -19,7 +19,7 @@ class Event:
     async def get_event_by_name(self, name: str, **kw) -> Dict[str, Any]:
         return await self.collection.find_one({'name': name})
 
-    async def create_event(self, data: Dict[str, Any], admin_id: str, **kw) -> bool:
+    async def create_event(self, data: Dict[str, Any], admin_id: str) -> bool:
         event = await self.get_event_by_name(data['name'])
         result = False
         if not event:
@@ -79,7 +79,7 @@ class Photo:
     async def get_event_by_name(self, name: str, **kw) -> Dict[str, Any]:
         return await self.collection.find_one({'name': name})
 
-    async def create_photo(self, event_id: str, **kw) -> bool:
+    async def create_photo(self, event_id: str) -> bool:
         now = datetime.now()
         result = await self.collection.insert({
             'date': now,
@@ -87,7 +87,7 @@ class Photo:
         })
         return result
 
-    async def create_avatar(self, user_id: str, **kw) -> bool:
+    async def create_avatar(self, user_id: str) -> bool:
         result = await self.collection.insert({
             'user_id': user_id,
         })
