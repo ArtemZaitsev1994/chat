@@ -7,7 +7,7 @@ from settings import USER_COLLECTION
 
 class User():
 
-    def __init__(self, db: TODO, data: Dict[str, Any], **kw):
+    def __init__(self, db: TODO, data: Dict[str, Any]):
         self.db = db
         self.collection = self.db[USER_COLLECTION]
         self.email = data.get('email')
@@ -17,11 +17,11 @@ class User():
         self.avatar = data.get('about', '')
         self.id = data.get('id')
 
-    async def check_user(self, **kw) -> TODO:
+    async def check_user(self) -> TODO:
         """Проверка существования юзера"""
         return await self.collection.find_one({'login': self.login})
 
-    async def get_login(self, user_id: str, **kw) -> str:
+    async def get_login(self, user_id: str) -> str:
         """
         Получить логин пользователя
 
@@ -40,7 +40,7 @@ class User():
         """
         return await self.collection.find_one({'_id': ObjectId(user_id)})
 
-    async def get_logins(self, users_id: str, **kw) -> Dict[str, str]:
+    async def get_logins(self, users_id: str) -> Dict[str, str]:
         """
         Получить словарь логинов(value) по ID пользователей(key)
 
@@ -52,7 +52,7 @@ class User():
         ).to_list(length=None)}
         return result
 
-    async def get_all_users(self, **kw) -> List[Any]:
+    async def get_all_users(self) -> List[Any]:
         """Получить всех пользователей в системе"""
         users = await self.collection.find().to_list(length=100)
         for u in users:
@@ -87,7 +87,7 @@ class User():
         )
         return result
 
-    async def get_users(self, users_list: list, **kw) -> List[TODO]:
+    async def get_users(self, users_list: list) -> List[TODO]:
         """
         Получить список юзеров по списку ID
 
@@ -98,7 +98,7 @@ class User():
         return result
 
 
-    async def create_user(self, **kw) -> bool:
+    async def create_user(self) -> bool:
         """Создание пользователя на основе экземпляра класса"""
         user = await self.check_user()
         if not user:

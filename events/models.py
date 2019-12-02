@@ -5,17 +5,17 @@ from settings import EVENT_COLLECTION
 
 class Event:
 
-    def __init__(self, db, **kw):
+    def __init__(self, db):
         self.db = db
         self.collection = self.db[EVENT_COLLECTION]
 
-    async def get_event(self, _id: str, **kw) -> TODO:
+    async def get_event(self, _id: str) -> TODO:
         return await self.collection.find_one({'_id': ObjectId(_id)})
 
-    async def get_event_by_name(self, name: str, **kw) -> TODO:
+    async def get_event_by_name(self, name: str) -> TODO:
         return await self.collection.find_one({'name': name})
 
-    async def create_event(self, data: Dict[str, Any], admin_id: str, **kw) -> bool:
+    async def create_event(self, data: Dict[str, Any], admin_id: str) -> bool:
         event = await self.get_event_by_name(data['name'])
         result = False
         if not event:
@@ -43,13 +43,13 @@ class Event:
     async def add_avatar(self, _id: str, photo_id: str) -> bool:
         return await self.collection.update_one({'_id': ObjectId(_id) }, {'$set': {'avatar': photo_id}})
 
-    async def get_events_by_comp(self, company_id: str, **kw) -> List[TODO]:
+    async def get_events_by_comp(self, company_id: str) -> List[TODO]:
         events = await self.collection.find({'company_id': company_id}).to_list(length=None)
         for e in events:
             e['_id'] = str(e['_id'])
         return events
 
-    async def get_events_by_companys(self, company_list: str, **kw) -> List[TODO]:
+    async def get_events_by_companys(self, company_list: str) -> List[TODO]:
         events = await self.collection.find({'company_id': {'$in': company_list}}).sort([('_id', 1)]).to_list(length=None)
         for e in events:
             e['_id'] = str(e['_id'])
@@ -65,17 +65,17 @@ class Event:
 
 class Photo:
 
-    def __init__(self, db, **kw):
+    def __init__(self, db):
         self.db = db
         self.collection = self.db[EVENT_COLLECTION]
 
-    async def get_photo(self, _id: str, **kw) -> TODO:
+    async def get_photo(self, _id: str) -> TODO:
         return await self.collection.find_one({'_id': ObjectId(_id)})
 
-    async def get_event_by_name(self, name: str, **kw) -> TODO:
+    async def get_event_by_name(self, name: str) -> TODO:
         return await self.collection.find_one({'name': name})
 
-    async def create_photo(self, event_id: str, **kw) -> bool:
+    async def create_photo(self, event_id: str) -> bool:
         now = datetime.now()
         result = await self.collection.insert({
             'date': now,
@@ -83,7 +83,7 @@ class Photo:
         })
         return result
 
-    async def create_avatar(self, user_id: str, **kw) -> bool:
+    async def create_avatar(self, user_id: str) -> bool:
         result = await self.collection.insert({
             'user_id': user_id,
         })

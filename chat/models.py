@@ -15,7 +15,7 @@ class Message():
         self.collection = db[MESSAGE_COLLECTION]
 
 
-    async def save(self, from_user: str, msg: str, to_user: str, chat_name: str, **kw) -> bool:
+    async def save(self, from_user: str, msg: str, to_user: str, chat_name: str) -> bool:
         """
         Сохранить сообщение приватного чата в базе
 
@@ -86,7 +86,7 @@ class UnreadMessage():
         self.collection = db[UNREAD_COLLECTION]
 
 
-    async def save(self, from_user: str, msg_id: str, to_user: str, **kw) -> bool:
+    async def save(self, from_user: str, msg_id: str, to_user: str) -> bool:
         """
         Сохранить сообщение общего чата в базе
 
@@ -104,7 +104,7 @@ class UnreadMessage():
         return result
 
 
-    async def save_for_company(self, to_user, msg_id, to_company, **kw):
+    async def save_for_company(self, to_user, msg_id, to_company):
         """
         Сохранить сообщение общего чата в базе
 

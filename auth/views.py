@@ -32,11 +32,11 @@ class Login(web.View):
 class SignIn(web.View):
 
     @aiohttp_jinja2.template('auth/sign.html')
-    async def get(self, **kw):
+    async def get(self):
         """Страница регистрации"""
         return {}
 
-    async def post(self, **kw):
+    async def post(self):
         """Обработка регистрации пользователя"""
         data = await self.request.post()
         user = User(self.request.app.db, data)
@@ -50,7 +50,7 @@ class SignIn(web.View):
 
 class SignOut(web.View):
 
-    async def get(self, **kw):
+    async def get(self):
         """Выход из аккаунта и редирект на страницу Входа"""
         session = await get_session(self.request)
         if session.get('user'):
@@ -63,7 +63,7 @@ class SignOut(web.View):
 class AccountDetails(web.View):
 
     @aiohttp_jinja2.template('auth/account.html')
-    async def get(self, **kw):
+    async def get(self):
         """Страница проосмотра данных о пользователе"""
         session = await get_session(self.request)
         self_id = session.get('user')
@@ -96,7 +96,7 @@ class AccountDetails(web.View):
         }
         return context_data
 
-    async def post(self, **kw):
+    async def post(self):
         """Обновление данных пользователя"""
         session = await get_session(self.request)
         self_id = session.get('user')
