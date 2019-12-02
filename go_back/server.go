@@ -9,7 +9,7 @@ import (
 	// "github.com/gorilla/sessions"
 	"github.com/streadway/amqp"
 	// "github.com/go-redis/redis"
-    "strconv"
+    // "strconv"
     "strings"
     "encoding/hex"
 
@@ -87,16 +87,15 @@ func routeEvents() {
 			fmt.Println("Websocket disconnected: " + clientKey)
 		case msg := <-messages:
 			for _, msgChan := range clients {
-				if len(msgChan) < cap(msgChan) {
+					fmt.Println(msg)
 					msgChan <- msg
-				}
 			}
 		}
 	}
 }
 
 func WsChat(ws *websocket.Conn) {
-	lenBuf := make([]byte, 5)
+	lenBuf := 1024
 
 	msgChan := make(chan *Msg, 100)
 	clientKey := strings.SplitAfterN(ws.Request().URL.Path, "ws_chat/", 2)[1]
@@ -108,33 +107,17 @@ func WsChat(ws *websocket.Conn) {
 
 	go func() {
 		for msg := range msgChan {
-			ws.Write([]byte(msg.text))
+			ws.Write([]byte(string(msg.text)))
 		}
 	}()
 
 	for {
-		_, err := ws.Read(lenBuf)
-		if err != nil {
-			fmt.Println("Error: ", err.Error())
-			return
-		}
 
-		length, _ := strconv.Atoi(strings.TrimSpace(string(lenBuf)))
-		if length > 65536 {
-			fmt.Println("Error: too big length: ", length)
-			return
-		}
-
-		if length <= 0 {
-			fmt.Println("Empty length: ", length)
-			return
-		}
-
-		buf := make([]byte, length)
+		buf := make([]byte, lenBuf)
 		_, err = ws.Read(buf)
 
 		if err != nil {
-			fmt.Println("Could not read ", length, " bytes: ", err.Error())
+			fmt.Println("Could not read ", lenBuf, " bytes: ", err.Error())
 			return
 		}
 
