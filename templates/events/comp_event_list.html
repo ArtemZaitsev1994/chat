@@ -3,38 +3,36 @@
 {% block content %}
 <div class="container">
     <h4>
-    Список ивентов.
+        Список ивентов.
     </h4>
     <a href="{{ '/event?id=%s'%company_id|urlencode }}">
         <input class="btn btn-primary" title="Создать ивент" type="button" value="Создать ивент">
     </a>
     {% for e in events %}
-    <div class="row" {% if e.private %}style="background: yellow"{% endif %}>
-        <div class="col-2"></div> 
-        <div class="col-8">
-                
-            {% if e.avatar == '' %}
-                <h2>ТусЭ</h2>
-            {% else %}
-            <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(e._id, e.avatar)) }}"></div>
-            {% endif %}
+        <div class="row" {% if e.private %}style="background: yellow"{% endif %}>
+            <div class="col-2"></div> 
+            <div class="col-8">
+
+                {% if e.avatar == '' %}
+                    <h2>ТусЭ</h2>
+                {% else %}
+                    <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(e._id, e.avatar)) }}"></div>
+                {% endif %}
                 <a href="{{ '/comp_event?id=%s'%e._id|urlencode }}" class='row'>
-                <div class="col-5">
-                    <div class="col">Название:{{e.name}}</div>
-                    <div class="col">Анонс:{{e.about}}</div>
-                    <div class="col">Дата:{{e.date}} {{e.time}}</div>
-                    {% if e.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}
-                </div>
-            </a>
-        <hr>
-        </div>    
-    </div>
+                    <div class="col-5">
+                        <div class="col">Название:{{e.name}}</div>
+                        <div class="col">Анонс:{{e.about}}</div>
+                        <div class="col">Дата:{{e.date}} {{e.time}}</div>
+                        {% if e.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}
+                    </div>
+                </a>
+                <hr>
+            </div>    
+        </div>
     {% endfor %}
 </div>
 {% endblock %}
-
 <script src="{{ static('js/event.js') }}"></script>
 <link rel="stylesheet" type="text/css" href="{{ static('css/company.css') }}">
-
 {% block footer %}
 {% endblock %}

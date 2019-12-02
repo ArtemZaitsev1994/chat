@@ -1,29 +1,28 @@
 import aiohttp_jinja2
-import collections
 import aiosmtplib
 
 from aiohttp import web
-from aiohttp_session import get_session
 from email.mime.text import MIMEText
 
-from utils import get_context
 from auth.models import User
 
 
 class About(web.View):
     @aiohttp_jinja2.template('about/about.html')
-    @get_context
-    async def get(self, data, **kw):
+    async def get(self, data):
+        PHOTO_PATH = 'photo/main.gif'
 
-        photo_path = 'photo/main.gif'
+        session = await get_session(self.request)
+        self_id = session.get('user')
+        login = session.get('login')
+        user = self.request.app['models']['user']
+        users = await user.get_all_users()
 
         context = {
-            'users': data['users'],
-            'own_login': data['login'],
-            'photo_path': photo_path,
-            'unread_counter': data['unread_counter'],
-            'is_socket': True,
-            'self_id': data['self_id']
+            'users': users,
+            'own_login': login,
+            'photo_path': PHOTO_PATH,
+            'self_id': self_id
         }
         return context
 
@@ -34,7 +33,7 @@ class About(web.View):
         message["To"] = "artz1994@mail.ru"
         message["Subject"] = f'{data["message"]}\n\n\n\n\n\n{data["callback"]}'
         server = aiosmtplib.SMTP('smtp.gmail.com', 587)
-        # TODO: 
+        # TODO:
         await server.connect()
         await server.ehlo()
         await server.starttls()
@@ -63,6 +62,3 @@ async def drop_all(request):
     await leo.create_user()
     await lana.create_user()
     await artem.create_user()
-
-
-

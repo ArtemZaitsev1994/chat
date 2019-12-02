@@ -30,3 +30,7 @@ UNREAD_COLLECTION  = 'unread_message'
 COMPANY_COLLECTION = 'company'
 EVENT_COLLECTION   = 'event'
 INVITE_COLLECTION  = 'invite'
+
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
+PHOTO_DIR = os.path.join(BASEDIR, 'static/photo/')
+AVATAR_DIR = os.path.join(BASEDIR, 'static/photo/users/')

@@ -1,16 +1,12 @@
 import collections
-import aiohttp_jinja2
 import json
-from typing import List
+
+import aiohttp_jinja2
 from aiohttp_session import get_session
 from aiohttp import web, WSMsgType
 
-from auth.models import User
-from company.models import Company
-from chat.models import Message, UnreadMessage
-from chat.utils import check_chat, create_chat_name
+from chat.utils import create_chat_name
 from settings import log
-from utils import get_context
 
 
 async def main_redirect(request):
@@ -20,13 +16,10 @@ async def main_redirect(request):
 
 class PrivateChat(web.View):
     @aiohttp_jinja2.template('chat/private_chat.html')
-    async def get(self, **kw):
-        """
-        Информация о приватном чате
-        """
-        unread = self.request.app['models']['unread']
-        company = self.request.app['models']['company']
+    async def get(self):
+        """Информация о приватном чате"""
         user = self.request.app['models']['user']
+
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
@@ -34,8 +27,6 @@ class PrivateChat(web.View):
         user_id = self.request.rel_url.query.get('user_id')
         chat_name = create_chat_name(self_id, user_id)
         user_login = (await user.get_user(user_id))['login']
-        
-
 
         return {
             'chat_name': chat_name,
@@ -46,26 +37,22 @@ class PrivateChat(web.View):
         }
 
 
-
 class ChatList(web.View):
     @aiohttp_jinja2.template('chat/index.html')
-    async def get(self, **kw):
-        """
-        Получение информации о чате внутри одной тусовки
-        """
+    async def get(self):
+        """Получение информации о чате внутри одной тусовки"""
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
         company = self.request.app['models']['company']
         user = self.request.app['models']['user']
+
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
 
         company_id = self.request.rel_url.query.get('company_id')
-
         comp = await company.get_company(company_id)
         users = await user.get_logins(comp['users'])
-
         messages = await message.get_messages_by_company(company_id)
         last_mess_author = messages[-1]['from_user'] if len(messages) > 0 else ''
         unr_mess = await unread.find_last_unread(company_id, self_id)
@@ -77,7 +64,6 @@ class ChatList(web.View):
             for mess in messages[-unr_mess:]:
                 mess['unread'] = True
 
-        # unread_counter.update(await unread.count_unread(self_id))
         await unread.delete_by_company(company_id, self_id)
         for _ws in self.request.app['websockets'][company_id]:
             await _ws.send_json({'type': 'read', 'user_id': self_id})
@@ -93,7 +79,6 @@ class ChatList(web.View):
             'online': '#'.join(online),
             'company_id': company_id,
             'unread_counter': unread_counter,
-            'is_socket': True,
             'last_mess_author': last_mess_author,
         }
         return context
@@ -104,20 +89,13 @@ async def update_unread_company(request):
     Прочитываем сообщения внутри одной комнаты
     приходит ajax-запрос
     """
-    data = await request.json()
     session = await get_session(request)
     self_id = session.get('user')
-    login = session.get('login')
+    data = await request.json()
     unread = request.app['models']['unread']
     await unread.delete_by_company(data['company_id'], self_id)
     for _ws in request.app['websockets'][data['company_id']]:
         await _ws.send_json({'type': 'read', 'user_id': self_id})
-    # try:
-    #     await request.app['online'][data['from_user']][1]['ws'].send_json({'type': 'read', 'user_id': self_id})
-    # except KeyError:
-    #     is_online = False
-    # else:
-    #     is_online = True
     return web.json_response(True)
 
 async def update_unread(request):
@@ -128,9 +106,7 @@ async def update_unread(request):
     data = await request.json()
     session = await get_session(request)
     self_id = session.get('user')
-    login = session.get('login')
-    unread = request.app['models']['unread']
-    # await unread.delete(self_id, data['from_user'])
+    # TODO: переделать через REDIS
     try:
         await request.app['online'][data['from_user']][1].send_json({'type': 'read', 'user_id': self_id})
     except KeyError:
@@ -148,13 +124,13 @@ class Contacts(web.View):
         """
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
+
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
         u = await user.get_user(self_id)
         contacts = await user.get_users(u['contacts'])
         companys = await company.get_companys_by_user(self_id)
-        print(u)
         return {'contacts': contacts, 'own_login': login, 'companys': companys}
 
     async def put(self):
@@ -175,13 +151,11 @@ class Contacts(web.View):
         Удалить пользователя из списка контактов
         """
         user = self.request.app['models']['user']
+
         session = await get_session(self.request)
         self_id = session.get('user')
-        login = session.get('login')
         contact_id = (await self.request.json())['user_id']
-        if await user.delete_contact(self_id, contact_id):
-            return web.json_response(True)
-        return web.json_response(False)
+        return web.json_response(bool(await user.delete_contact(self_id, contact_id)))
 
 
 class UserChatCompany(web.View):
@@ -192,10 +166,11 @@ class UserChatCompany(web.View):
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
         user = self.request.app['models']['user']
+        company = self.request.app['models']['company']
+
         session = await get_session(self.request)
         self_id = session.get('user')
         company_id = (await self.request.json())['company_id']
-        company = self.request.app['models']['company']
         comp = await company.get_company(company_id)
         users = await user.get_logins(comp['users'])
         messages = await message.get_messages_by_company(company_id)
@@ -219,6 +194,7 @@ class UserChat(web.View):
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
         user = self.request.app['models']['user']
+
         session = await get_session(self.request)
         self_id = session.get('user')
         user_id = (await self.request.json())['user_id']
@@ -235,6 +211,7 @@ class UserChat(web.View):
             mess['_id'] = str(mess['_id'])
             mess['time'], _ = str(mess["time"].time()).split('.')
             mess['from_user'] = users[mess['from_user']]
+        # TODO: REDIS
         try:
             await self.request.app['online'][user_id][1].send_json({'type': 'read', 'user_id': self_id})
         except KeyError:
@@ -247,15 +224,12 @@ class UserChat(web.View):
             'is_online': is_online, 
             'last_mess_author': last_mess_author
         }
-        print(answer)
         return web.json_response(answer)
 
 
 class CompanyWebSocket(web.View):
-    """
-    Класс websocket-а, вся логика интерактивной работы с пользователем
-    TODO: всплывающие popup уведомления о ивентах
-    """
+    """Класс websocket-а, вся логика чата здесь
+    TODO: GOLANG"""
     async def get(self):
         session = await get_session(self.request)
         self.self_id = session.get('user')
@@ -264,8 +238,8 @@ class CompanyWebSocket(web.View):
         self.unread = self.request.app['models']['unread']
         self.message = self.request.app['models']['message']
         self.company = self.request.app['models']['company']
-        
-        
+        self.company_id = self.request.rel_url.query.get('company_id')
+
         ws = web.WebSocketResponse()
         await ws.prepare(self.request)
 
@@ -278,9 +252,6 @@ class CompanyWebSocket(web.View):
                     'type': 'joined'
                 })
         self.request.app['online'][self.self_id] = ws
-
-        self.company_id = self.request.rel_url.query.get('company_id')
-
 
         async for msg in ws:
             if msg.type == WSMsgType.TEXT:
@@ -356,7 +327,6 @@ class CompanyWebSocket(web.View):
                 continue
             if not await self.unread.check_unread(data['company_id'], u):
                 r = await self.unread.save_for_company(
-                    # from_user=self_id,
                     to_user=u,
                     to_company=data['company_id'],
                     msg_id=result,
@@ -384,7 +354,7 @@ class CompanyWebSocket(web.View):
 class CommonWebSocket(web.View):
     """
     Класс websocket-а, вся логика интерактивной работы с пользователем
-    TODO: всплывающие popup уведомления о ивентах
+    TODO: выпилить
     """
     async def get(self):
         session = await get_session(self.request)

@@ -1,10 +1,4 @@
-import json
-import collections
-import os
 import aiohttp_jinja2
-
-from datetime import datetime
-from bson.objectid import ObjectId
 from aiohttp import web
 from aiohttp_session import get_session
 
@@ -18,5 +12,5 @@ class Search(web.View):
         items = await model.get_all()
         session = await get_session(self.request)
         login = session.get('login')
-        data = {'is_socket': False, item: True, 'items': items, 'own_login': login}
+        data = {item: True, 'items': items, 'own_login': login}
         return data
