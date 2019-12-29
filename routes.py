@@ -46,6 +46,6 @@ routes = [
     ('*', '/search', Search, 'search'),
 
     ('*',   '/about',    About,    'about_main'),
-    # ОЧИСТКА БАЗЫ!!!!!!!!!!!
+    # ОЧИСТКА БАЗЫ*********************************
     ('GET', '/drop_all', drop_all, 'drop_all'),
 ]

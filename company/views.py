@@ -42,14 +42,16 @@ class AllCompanys(web.View):
     async def get(self):
         session = await get_session(self.request)
         login = session.get('login')
+        self_id = session.get('user')
 
         company = self.request.app['models']['company']
         event = self.request.app['models']['event']
 
+        companys = await company.get_companys_by_user(self_id)
+
         data = {
-            'own_login': login,
             'companys': {x['_id']: x['name'] for x in await company.get_all()},
-            'events': await event.get_events_by_companys([x for x in data['companys']]),
+            'events': await event.get_events_by_companys(companys),
             'own_login': login,
         }
         return data

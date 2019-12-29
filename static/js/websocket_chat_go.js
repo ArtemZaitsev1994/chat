@@ -14,6 +14,8 @@ $(document).ready(function(){
     var last_mess_author = $('#my-data').data().last_mess_author
     var type = 'company_chat_mess'
 
+    var msg = $('#message');
+
     var counter = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
     })
@@ -31,10 +33,10 @@ $(document).ready(function(){
     counter['main'] = $('#main_chat').val()
 
     try{
-        sock = new WebSocket(`ws://localhost:8081/go/ws_chat/${self_id}`);
+        sock = new WebSocket(`ws://localhost:8081/go/ws_chat`);
     }
     catch(err){
-        sock = new WebSocket(`wss://localhost:8081/go/ws_chat/${self_id}`);
+        sock = new WebSocket(`wss://localhost:8081/go/ws_chat`);
     }
 
     // if (typeof company_id === "undefined"){
@@ -62,6 +64,7 @@ $(document).ready(function(){
             htmlText = '[' + date.toLocaleTimeString('en-US', options) + '] ';
 
         try{
+            console.log(message)
             var messageObj = JSON.parse(message);
             console.log(messageObj)
             // если пришло сообщение с текстом
@@ -139,7 +142,6 @@ $(document).ready(function(){
     }
 
     function sendMessage(){
-        var msg = $('#message');
         sock.send(JSON.stringify({
             'from_client': true,
             'msg': msg.val(),
@@ -147,7 +149,8 @@ $(document).ready(function(){
             'to_user': to_user,
             'to_user_login': to_user_login,
             'company_id': company_id,
-            'type': type,
+            'type': 'chat_mess',
+            'from': self_id,
         }));
         msg.val('').focus();
     }
@@ -201,6 +204,10 @@ $(document).ready(function(){
     }
 
     sock.onopen = function(){
+        sock.send(JSON.stringify({
+            'company_id': company_id,
+            'self_id': self_id,
+        }));
         console.log('Connection to server started');
         $("#messages_box").hover(() =>{
             updateUnreadInCompany()

@@ -2,29 +2,49 @@ package main
 
 import (
 	// "os"
+	"context"
 	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
     "golang.org/x/net/websocket"
 	// "github.com/gorilla/sessions"
-	"github.com/streadway/amqp"
+	// "github.com/streadway/amqp"
 	// "github.com/go-redis/redis"
     // "strconv"
-    "strings"
-    "encoding/hex"
+    // "strings"
+    // "encoding/hex"
 
+    "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+    // "go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 
 type (
 	Msg struct {
-		clientKey string
-		text      string
+		clientData ClientData
+		text       string
 	}
 
 	NewClientEvent struct {
-		clientKey string
-		msgChan   chan *Msg
+		clientData ClientData
+		msgChan    chan *Msg
+	}
+
+	JSMess struct {
+		MType       string `json:"type"`
+		MText       string `json:"msg"`
+		Sender      string `json:"from"`
+		Company     string `json:"company_id"`
+		ToUser      string `json:"to_user"`
+		ToUserLogin string `json:"to_user_login"`
+		ChatName    string `json:"chat_name"`
+	}
+
+	ClientData struct {
+		SelfId    string `json:"self_id"`
+		CompanyId string `json:"company_id"`
 	}
 )
 
@@ -32,78 +52,51 @@ var (
 	clientRequests    = make(chan *NewClientEvent, 100)
 	clientDisconnects = make(chan string, 100)
 	messages          = make(chan *Msg, 100)
+	notifications     = make(chan *Msg, 100)
 )
 
-// var client = redis.Client
-
-// func ExampleNewClient() {
-// 	client = redis.NewClient(&redis.Options{
-// 		Addr:     "localhost:6379",
-// 		Password: "", // no password set
-// 		DB:       0,  // use default DB
-// 	})
-
-// 	pong, err := client.Ping().Result()
-// 	fmt.Println(pong, err)
-// 	// Output: PONG <nil>
-// }
-
-func CreateRabbitQueue(queue_name string) (amqp.Channel, string) {
-
-	// conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
-	FailOnError(err, "Failed to connect")
-	defer conn.Close()
-
-	rabbit_chat_queue, err := conn.Channel()
-	FailOnError(err, "Fail to open a channel")
-	defer rabbit_chat_queue.Close()
-
-	q, err := rabbit_chat_queue.QueueDeclare(
-		queue_name,
-		false,
-		true,
-		false,
-		false,
-		nil,
-	)
-	FailOnError(err, "Failed to declare a queue")
-	return *rabbit_chat_queue, q.Name
-
-}
-
-
 func routeEvents() {
-	clients := make(map[string]chan *Msg)
+	// clients := make(map[string]chan *Msg)
+	rooms := make(map[ClientData][]chan *Msg)
+	notes := make(map[string][]chan *Msg)
 
 	for {
 		select {
 		case req := <-clientRequests:
-			clients[req.clientKey] = req.msgChan
-			fmt.Println("Websocket connected: " + req.clientKey)
-		case clientKey := <-clientDisconnects:
-			close(clients[clientKey])
-			delete(clients, clientKey)
-			fmt.Println("Websocket disconnected: " + clientKey)
+			rooms[req.clientData] = append(rooms[req.clientData], req.msgChan)
+			notes[req.clientData.SelfId] = append(notes[req.clientData.SelfId], req.msgChan) 
+			fmt.Println("Websocket connected: " + req.clientData.SelfId)
+		case clientData := <-clientDisconnects:
+			// close(rooms[clientData])
+			// delete(rooms, clientData)
+			fmt.Println("Websocket disconnected: " + clientData)
+
 		case msg := <-messages:
-			for _, msgChan := range clients {
-					fmt.Println(msg)
-					msgChan <- msg
+			for _, msgChan := range rooms[msg.clientData] {
+				fmt.Println(msg)
+				msgChan <- msg
+			}
+		case note := <-notifications:
+			for _, noteChan := range notes[note.clientData.SelfId] {
+				fmt.Println(note)
+				noteChan <- note
 			}
 		}
 	}
 }
 
 func WsChat(ws *websocket.Conn) {
-	lenBuf := 1024
+
+	var clientData ClientData
+	websocket.JSON.Receive(ws, &clientData)
 
 	msgChan := make(chan *Msg, 100)
-	clientKey := strings.SplitAfterN(ws.Request().URL.Path, "ws_chat/", 2)[1]
-	_, err := hex.DecodeString(clientKey)
-	FailOnError(err, "Wrong URL")
+	// clientKey := strings.SplitAfterN(ws.Request().URL.Path, "ws_chat/", 2)[1]
+	// _, err := hex.DecodeString(clientKey)
+	// FailOnError(err, "Wrong URL")
 
-	clientRequests <- &NewClientEvent{clientKey, msgChan}
-	defer func() { clientDisconnects <- clientKey }()
+	clientRequests <- &NewClientEvent{clientData, msgChan}
+	defer func() { clientDisconnects <- clientData.SelfId }()
 
 	go func() {
 		for msg := range msgChan {
@@ -112,16 +105,27 @@ func WsChat(ws *websocket.Conn) {
 	}()
 
 	for {
+		var messData JSMess
+		// var data map[string]interface{}
+		// var data string
+		websocket.JSON.Receive(ws, &messData)
+		fmt.Println(messData)
 
-		buf := make([]byte, lenBuf)
-		_, err = ws.Read(buf)
+		// buf := make([]byte, lenBuf)
+		// _, err := ws.Read(buf)
 
-		if err != nil {
-			fmt.Println("Could not read ", lenBuf, " bytes: ", err.Error())
-			return
+		// if err != nil {
+		// 	fmt.Println("Could not read  bytes: ", err.Error())
+		// 	return
+		// }
+		switch mtype := messData.MType; mtype {
+		case "chat_mess":
+			messages <- &Msg{clientData, messData.MText}
+		case "notification":
+			notifications <- &Msg{clientData, messData.MText}
+		default:
+			fmt.Println("Undefined message type.")
 		}
-
-		messages <- &Msg{clientKey, string(buf)}
 	}
 }
 
@@ -138,36 +142,54 @@ func main() {
 	// Output: PONG <nil>
 	// -------------------------------
 
-	// -----------RABBIT--------------
-	// conn, err := amqp.Dial("amqp://guest:guest@rabbitmq:5672/")
-	// conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-	// FailOnError(err, "Failed to connect")
-	// defer conn.Close()
+	// -----------MONGO----------------
+	// Create client
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+	FailOnError(err, "Client creation failed")
 
-	// ch, err := conn.Channel()
-	// FailOnError(err, "Fail to open a channel")
-	// defer ch.Close()
+	options := options.Find()
+	options.SetLimit(2)
+	filter := bson.M{}
 
-	// _, err = ch.QueueDeclare(
-	// 	"chat",
-	// 	false,
-	// 	true,
-	// 	false,
-	// 	false,
-	// 	nil,
-	// )
-	// FailOnError(err, "Failed to declare a queue")
-	// rabbit_chat_queue, q_name := ch, "chat"
-	// ----------------------------------
+	// Create connect
+	err = client.Connect(context.TODO())
+	FailOnError(err, "Connection to Mongo failed")
 
+	// Check the connection
+	err = client.Ping(context.TODO(), nil)
+	FailOnError(err, "Ping to Mongo failed")
 
+	fmt.Println("Connected to MongoDB!")
+	collection := client.Database("chat").Collection("company")
 
+	cur, err := collection.Find(context.TODO(), filter, options)
+	FailOnError(err, "Creation cursor failed")
 
+	for cur.Next(context.TODO()) {
+
+	    // create a value into which the single document can be decoded
+	    var elem map[string]interface{}
+	    err := cur.Decode(&elem)
+		FailOnError(err, "Creation cursor failed")
+
+	    fmt.Println(elem)
+	}
+	FailOnError(err, "Creation cursor failed")
+
+	// Close the cursor once finished
+	cur.Close(context.TODO())
+
+	// -----------MONGOEND----------------
 
 	go routeEvents()
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.Handle("/go/ws_chat/{user_id}", websocket.Handler(WsChat))
+	router.Handle("/go/ws_chat", websocket.Handler(WsChat))
+	router.HandleFunc("/ping/", func (w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello Maksim!")
+	})
+
+	http.Handle("/", router)
 
 
 
@@ -213,38 +235,5 @@ func main() {
 	// })
 
 
-
-
-
-	http.Handle("/", router)
-	// http.HandleFunc("/go/ws_common", func(w http.ResponseWriter, r *http.Request) {
-	// 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-	// 	fmt.Fprintln(os.Stdout, w, "Hello common World!")
-	// 	fmt.Println(r)
-		// ws, err := upgrader.Upgrade(w, r, nil)
-		// if err != nil {
-		// 	fmt.Fprintln(os.Stdout, err)
-		// }
-
-		// err = ws.WriteMessage(1, []byte("Hello, common World!!"))
-	 //    if err != nil {
-	 //        fmt.Fprintln(os.Stdout, err)
-	 //    }
-
-		// for {
-		// 	messageType, p, err := ws.ReadMessage()
-		// 	if err != nil {
-		// 		fmt.Fprintln(os.Stdout, err)
-		// 	}
-
-		// 	fmt.Fprintln(os.Stdout, string(p))
-
-		// 	if err := ws.WriteMessage(messageType, p); err != nil {
-		// 		fmt.Fprintln(os.Stdout, err)
-		// 		break
-		// 	}
-		// }
-	// })
-
-	http.ListenAndServe(":8081", nil)
+	http.ListenAndServe("localhost:8081", nil)
 }
