@@ -4,8 +4,8 @@ $(document).ready(function(){
     var unread_counter = $('#chat-data').data().unread_counter
 
     var chat_name = $('#my-data').data().name
-    var to_user = $('#my-data').data().to_user
-    var to_user_login = $('#my-data').data().to_user_login
+    // var to_user = $('#my-data').data().to_user
+    // var to_user_login = $('#my-data').data().to_user_login
     var own_login = $('#my-data').data().own_login
     var self_id = $('#my-data').data().self_id
     var online_id = $('#my-data').data().online_id.split('#')
@@ -64,9 +64,7 @@ $(document).ready(function(){
             htmlText = '[' + date.toLocaleTimeString('en-US', options) + '] ';
 
         try{
-            console.log(message)
             var messageObj = JSON.parse(message);
-            console.log(messageObj)
             // если пришло сообщение с текстом
             if (messageObj.type == 'msg'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
@@ -142,16 +140,19 @@ $(document).ready(function(){
     }
 
     function sendMessage(){
-        sock.send(JSON.stringify({
-            'from_client': true,
+        let data = {
+            // 'from_client': true,
             'msg': msg.val(),
             'chat_name': chat_name,
-            'to_user': to_user,
-            'to_user_login': to_user_login,
+            // 'to_user': to_user,
+            // 'to_user_login': to_user_login,
             'company_id': company_id,
             'type': 'chat_mess',
             'from': self_id,
-        }));
+            'from_login': own_login,
+        }
+        console.log(data)
+        sock.send(JSON.stringify(data));
         msg.val('').focus();
     }
 
@@ -227,7 +228,7 @@ $(document).ready(function(){
 
     // income message handler
     sock.onmessage = function(event) {
-        console.log(event.data)
+        console.log("sock.onmessage:\n", event.data)
         showMessage(event.data);
     };
 
@@ -311,6 +312,11 @@ $(document).ready(function(){
     });
 
     sock.onclose = function(event){
+        let data = {
+            'type': 'closed',
+        }
+        sock.send(JSON.stringify(data));
+
         if(event.wasClean){
             showMessage('Clean connection end');
         }else{

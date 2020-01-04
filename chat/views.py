@@ -43,6 +43,9 @@ class ChatList(web.View):
         """Получение информации о чате внутри одной тусовки"""
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
+        # await unread.clear_db()
+        # await message.clear_db()
+        print(await message.collection.find().to_list(length=None))
         company = self.request.app['models']['company']
         user = self.request.app['models']['user']
 

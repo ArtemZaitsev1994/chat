@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"github.com/gorilla/mux"
     "golang.org/x/net/websocket"
+    "time"
 	// "github.com/gorilla/sessions"
 	// "github.com/streadway/amqp"
 	// "github.com/go-redis/redis"
     // "strconv"
     // "strings"
     // "encoding/hex"
+    "encoding/json"
 
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
@@ -24,7 +26,7 @@ import (
 type (
 	Msg struct {
 		clientData ClientData
-		text       string
+		messData   JSMess
 	}
 
 	NewClientEvent struct {
@@ -36,6 +38,7 @@ type (
 		MType       string `json:"type"`
 		MText       string `json:"msg"`
 		Sender      string `json:"from"`
+		SenderLogin string `json:"from_login"`
 		Company     string `json:"company_id"`
 		ToUser      string `json:"to_user"`
 		ToUserLogin string `json:"to_user_login"`
@@ -46,35 +49,64 @@ type (
 		SelfId    string `json:"self_id"`
 		CompanyId string `json:"company_id"`
 	}
+
+	Message struct {
+        FromUser   string    `bson:"from_user"`
+        Msg        string    `bson:"msg"`
+        InsertTime time.Time `bson:"time"`
+        CompanyId  string    `bson:"company_id"`
+	}
+
+	MessToCompany struct {
+        FromUser      string    `json:"from_id"`
+        Msg           string    `json:"msg"`
+        InsertTime    time.Time `json:"time"`
+        CompanyId     string    `json:"company_id"`
+    	FromUserLogin string    `json:"from"`
+    	Type          string    `json:"type"`  
+	}
 )
 
 var (
 	clientRequests    = make(chan *NewClientEvent, 100)
-	clientDisconnects = make(chan string, 100)
+	clientDisconnects = make(chan ClientData, 100)
 	messages          = make(chan *Msg, 100)
 	notifications     = make(chan *Msg, 100)
 )
 
-func routeEvents() {
+func routeEvents(mon_client *mongo.Client) {
 	// clients := make(map[string]chan *Msg)
-	rooms := make(map[ClientData][]chan *Msg)
+	rooms := make(map[string]map[string]chan *Msg)
 	notes := make(map[string][]chan *Msg)
+	mess_c := mon_client.Database("chat").Collection("messages")
 
 	for {
 		select {
 		case req := <-clientRequests:
-			rooms[req.clientData] = append(rooms[req.clientData], req.msgChan)
+			if rooms[req.clientData.CompanyId] == nil {
+				rooms[req.clientData.CompanyId] = make(map[string]chan *Msg)
+			}
+			rooms[req.clientData.CompanyId][req.clientData.SelfId] = req.msgChan
 			notes[req.clientData.SelfId] = append(notes[req.clientData.SelfId], req.msgChan) 
 			fmt.Println("Websocket connected: " + req.clientData.SelfId)
 		case clientData := <-clientDisconnects:
-			// close(rooms[clientData])
-			// delete(rooms, clientData)
-			fmt.Println("Websocket disconnected: " + clientData)
+			close(rooms[clientData.CompanyId][clientData.SelfId])
+			delete(rooms[clientData.CompanyId], clientData.SelfId)
+
+			fmt.Println("Websocket disconnected: " + clientData.SelfId)
 
 		case msg := <-messages:
-			for _, msgChan := range rooms[msg.clientData] {
-				fmt.Println(msg)
+			m := Message{
+				FromUser: msg.clientData.SelfId,
+				Msg: msg.messData.MText,
+				CompanyId: msg.clientData.CompanyId,
+				InsertTime: time.Now(),
+			}
+			_, err := mess_c.InsertOne(context.TODO(), m)
+			FailOnError(err, "Insertion message failed")
+			for _, msgChan := range rooms[msg.clientData.CompanyId] {
 				msgChan <- msg
+				fmt.Println(msg)
 			}
 		case note := <-notifications:
 			for _, noteChan := range notes[note.clientData.SelfId] {
@@ -86,6 +118,7 @@ func routeEvents() {
 }
 
 func WsChat(ws *websocket.Conn) {
+	defer ws.Close()
 
 	var clientData ClientData
 	websocket.JSON.Receive(ws, &clientData)
@@ -96,37 +129,54 @@ func WsChat(ws *websocket.Conn) {
 	// FailOnError(err, "Wrong URL")
 
 	clientRequests <- &NewClientEvent{clientData, msgChan}
-	defer func() { clientDisconnects <- clientData.SelfId }()
+	defer func() { clientDisconnects <- clientData }()
 
 	go func() {
 		for msg := range msgChan {
-			ws.Write([]byte(string(msg.text)))
+			m := MessToCompany{
+				Msg:           msg.messData.MText,
+				CompanyId:     msg.clientData.CompanyId,
+				InsertTime:    time.Now(),
+				FromUser:      msg.messData.Sender,
+				FromUserLogin: msg.messData.SenderLogin,
+				Type:          "msg",
+			}
+			bytes, err := json.Marshal(m)
+			FailOnError(err, "Cant serialize message.")
+			ws.Write(bytes)
 		}
 	}()
 
-	for {
-		var messData JSMess
-		// var data map[string]interface{}
-		// var data string
-		websocket.JSON.Receive(ws, &messData)
-		fmt.Println(messData)
+	L:
+		for {
+			// var data map[string]interface{}
+			// var data string
+			var messData JSMess
+			websocket.JSON.Receive(ws, &messData)
 
-		// buf := make([]byte, lenBuf)
-		// _, err := ws.Read(buf)
+			// buf := make([]byte, lenBuf)
+			// _, err := ws.Read(buf)
 
-		// if err != nil {
-		// 	fmt.Println("Could not read  bytes: ", err.Error())
-		// 	return
-		// }
-		switch mtype := messData.MType; mtype {
-		case "chat_mess":
-			messages <- &Msg{clientData, messData.MText}
-		case "notification":
-			notifications <- &Msg{clientData, messData.MText}
-		default:
-			fmt.Println("Undefined message type.")
+			// if err != nil {
+			// 	fmt.Println("Could not read  bytes: ", err.Error())
+			// 	return
+			// }
+			// fmt.Println(closed_ch)
+			// fmt.Println(ws)
+			// fmt.Println("~~~~~~~~~~~~")
+			switch mtype := messData.MType; mtype {
+			case "chat_mess":
+				messages <- &Msg{clientData, messData}
+			case "notification":
+				notifications <- &Msg{clientData, messData}
+			case "closed":
+				fmt.Println("WS closed.")
+				break L
+			default:
+				fmt.Println("Undefined message type.")
+				break L
+			}
 		}
-	}
 }
 
 func main() {
@@ -144,7 +194,7 @@ func main() {
 
 	// -----------MONGO----------------
 	// Create client
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+	mon_client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
 	FailOnError(err, "Client creation failed")
 
 	options := options.Find()
@@ -152,15 +202,15 @@ func main() {
 	filter := bson.M{}
 
 	// Create connect
-	err = client.Connect(context.TODO())
+	err = mon_client.Connect(context.TODO())
 	FailOnError(err, "Connection to Mongo failed")
 
 	// Check the connection
-	err = client.Ping(context.TODO(), nil)
+	err = mon_client.Ping(context.TODO(), nil)
 	FailOnError(err, "Ping to Mongo failed")
 
 	fmt.Println("Connected to MongoDB!")
-	collection := client.Database("chat").Collection("company")
+	collection := mon_client.Database("chat").Collection("messages")
 
 	cur, err := collection.Find(context.TODO(), filter, options)
 	FailOnError(err, "Creation cursor failed")
@@ -177,11 +227,11 @@ func main() {
 	FailOnError(err, "Creation cursor failed")
 
 	// Close the cursor once finished
-	cur.Close(context.TODO())
+	defer cur.Close(context.TODO())
 
 	// -----------MONGOEND----------------
 
-	go routeEvents()
+	go routeEvents(mon_client)
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.Handle("/go/ws_chat", websocket.Handler(WsChat))
