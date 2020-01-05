@@ -45,7 +45,7 @@ class ChatList(web.View):
         unread = self.request.app['models']['unread']
         # await unread.clear_db()
         # await message.clear_db()
-        print(await message.collection.find().to_list(length=None))
+        print(await unread.collection.find().to_list(length=None))
         company = self.request.app['models']['company']
         user = self.request.app['models']['user']
 
@@ -61,11 +61,11 @@ class ChatList(web.View):
         unr_mess = await unread.find_last_unread(company_id, self_id)
         unread_counter = collections.defaultdict(int)
         unread_counter['main_chat'] = 0
-        for mess in messages:
-            mess['from_user'] = users[mess['from_user']]
         if unr_mess > 0 and messages[-1]['from_user'] == self_id:
             for mess in messages[-unr_mess:]:
                 mess['unread'] = True
+        for mess in messages:
+            mess['from_user'] = users[mess['from_user']]
 
         await unread.delete_by_company(company_id, self_id)
         for _ws in self.request.app['websockets'][company_id]:

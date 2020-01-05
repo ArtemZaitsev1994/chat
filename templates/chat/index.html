@@ -34,7 +34,7 @@ Main Chat page
                     <div>
                         <button type="button" id="main_chat" class="btn btn-outline-{% if unread_counter.main_chat > 0 %}info{% else %}success{% endif %} btn-sm btn-block" value="{{unread_counter['main_chat']}}">Общий {% if unread_counter.main_chat > 0 %}({{unread_counter.main_chat}}){% endif %}</button>
                     </div>
-            {% for user in users %}
+            <!-- {% for user in users %}
                 <div>
                     <button 
                         type="button" 
@@ -45,7 +45,7 @@ Main Chat page
                             {{user.login}} {% if unread_counter[user._id] > 0 %}({{unread_counter[user._id]}}){% endif %}
                     </button>
                 </div>
-            {% endfor %}
+            {% endfor %} -->
         </div>    
         <div class="col-8">
             <div id='subscribe'>

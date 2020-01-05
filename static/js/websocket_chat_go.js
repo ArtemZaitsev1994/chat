@@ -131,6 +131,8 @@ $(document).ready(function(){
                 } else if (last_mess_author == self_id) {
                     $('.unread').removeClass('unread')
                 }
+            } else if(messageObj.type == 'notification'){
+                console.log(`Notification - message: ${messageObj.msg}\nfrom: ${messageObj.from}`)
             }
         } catch (e){
             console.log(e)
