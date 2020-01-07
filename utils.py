@@ -1,5 +1,8 @@
+from typing import Dict, Any
+
 import aio_pika
 import aioredis
+import json
 from aiohttp.web_app import Application
 
 from auth.models import User
@@ -11,18 +14,19 @@ from invite.models import Invite
 
 async def create_models(app: Application):
     app['models'].update({
-        'user': User(app.db, {}),
-        'unread': UnreadMessage(app.db),
         'message': Message(app.db),
         'company': Company(app.db),
+        'unread': UnreadMessage(app.db),
+        'invite': Invite(app.db),
         'event': Event(app.db),
         'photo': Photo(app.db),
-        'invite': Invite(app.db)
+        'user': User(app.db, {}),
     })
 
 
 async def create_redis(app: Application):
     app['redis'] = await aioredis.create_redis(('localhost', 6379))
+    app['redis'].decode_response = True
     # app['redis'] = await aioredis.create_redis(('redis', 6379))
 
 async def close_redis(app: Application):
@@ -61,3 +65,11 @@ async def start_background_tasks(app: Application):
 async def cleanup_background_tasks(app: Application):
     app['rabbit_listner'].cancel()
     await app['rabbit_listner']
+
+
+async def send_notification(app: Application, data: Dict[list, Any]):
+    js_data = json.dumps(data)
+    js_data = js_data.encode('utf-8').decode('utf8').replace("'", '"')
+    
+
+    await app['redis'].publish_json('notifications', js_data)

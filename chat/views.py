@@ -83,6 +83,7 @@ class ChatList(web.View):
             'company_id': company_id,
             'unread_counter': unread_counter,
             'last_mess_author': last_mess_author,
+            'company': comp['name'],
         }
         return context
 

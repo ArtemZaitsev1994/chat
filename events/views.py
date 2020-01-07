@@ -1,8 +1,10 @@
 import os
+import json
 
 import aiohttp_jinja2
 from aiohttp import web
 from aiohttp_session import get_session
+from utils import send_notification
 
 
 class Event(web.View):
@@ -18,11 +20,22 @@ class Event(web.View):
 
     async def post(self,):
         event = self.request.app['models']['event']
+        comp = self.request.app['models']['company']
 
         data = await self.request.json()
+        company = await comp.get_company(data['company_id'])
         session = await get_session(self.request)
         self_id = session.get('user')
+        self_login = session.get('login')
         if await event.create_event(data, self_id):
+            data = {}
+            print(company)
+            data['company_id'] = str(company['_id'])
+            data['company_name'] = company['name']
+            data['type'] = 'new_event'
+            data['self_login'] = self_login
+            
+            await send_notification(self.request.app, data)
             return web.json_response(True)
         return web.json_response({'error': 'Ивент с таким именем уже есть.'})
     
@@ -61,6 +74,7 @@ class CompEvent(web.View):
         self_id = session.get('user')
 
         event = await event.get_event(event_id)
+        print(event)
         comp = await company.get_company(event['company_id'])
         context = {
             'access': self_id in comp['users'],

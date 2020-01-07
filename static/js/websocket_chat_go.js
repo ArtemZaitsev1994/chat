@@ -1,21 +1,21 @@
 $(document).ready(function(){
     var sock = {};
 
-    var unread_counter = $('#chat-data').data().unread_counter
-
-    var chat_name = $('#my-data').data().name
+    var chat_name        = $('#my-data').data().name
+    var company          = $('#my-data').data().company
     // var to_user = $('#my-data').data().to_user
     // var to_user_login = $('#my-data').data().to_user_login
-    var own_login = $('#my-data').data().own_login
-    var self_id = $('#my-data').data().self_id
-    var online_id = $('#my-data').data().online_id.split('#')
-    var company_id = $('#my-data').data().company_id
-    var c_id = company_id
+    var own_login        = $('#my-data').data().own_login
+    var self_id          = $('#my-data').data().self_id
+    var online_id        = $('#my-data').data().online_id.split('#')
     var last_mess_author = $('#my-data').data().last_mess_author
+    var company_id       = $('#my-data').data().company_id
+
+    var c_id = company_id
     var type = 'company_chat_mess'
+    var msg  = $('#message');
 
-    var msg = $('#message');
-
+    var unread_counter = $('#chat-data').data().unread_counter
     var counter = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
     })
@@ -64,9 +64,10 @@ $(document).ready(function(){
             htmlText = '[' + date.toLocaleTimeString('en-US', options) + '] ';
 
         try{
+            console.log(message)
             var messageObj = JSON.parse(message);
             // если пришло сообщение с текстом
-            if (messageObj.type == 'msg'){
+            if (messageObj.type == 'chat_mess'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
 
                 // проверяем находимся ли мы в комнате общего чата, для которой сообщение
@@ -132,6 +133,13 @@ $(document).ready(function(){
                     $('.unread').removeClass('unread')
                 }
             } else if(messageObj.type == 'notification'){
+                text = messageObj.text
+                if (text.length > 50) {
+                    text = text.slice(0, 50) + '...'
+                }
+                if (messageObj.subtype == 'new_mess') {
+                    $('#notifications').text(`Новое сообщение в чате ${messageObj.company} от ${messageObj.from} "${text}"`)
+                }
                 console.log(`Notification - message: ${messageObj.msg}\nfrom: ${messageObj.from}`)
             }
         } catch (e){
@@ -145,7 +153,7 @@ $(document).ready(function(){
         let data = {
             // 'from_client': true,
             'msg': msg.val(),
-            'chat_name': chat_name,
+            'company': company,
             // 'to_user': to_user,
             // 'to_user_login': to_user_login,
             'company_id': company_id,
@@ -210,6 +218,7 @@ $(document).ready(function(){
         sock.send(JSON.stringify({
             'company_id': company_id,
             'self_id': self_id,
+            'login': own_login,
         }));
         console.log('Connection to server started');
         $("#messages_box").hover(() =>{
