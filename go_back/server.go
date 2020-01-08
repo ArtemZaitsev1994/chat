@@ -103,6 +103,7 @@ type (
 		note       *Notification
 		ForCompany string
 		wsUuid     uuid.UUID
+		Users      []string
 	}
 
 	// Структура Компании из базы
@@ -124,6 +125,7 @@ type (
 		CompanyName string `json:"company_name"`
 		Type        string `json:"type"`
 		UserName    string `json:"self_login"`
+		Payload     string `json:"payload"`
 	}
 )
 
@@ -151,29 +153,38 @@ func routeEvents() {
 	// содержит комнаты(компании) с вебсокетами пользователей
 	rooms   := make(map[string]map[uuid.UUID]Ch)
 	// словарь с сокетами пользователей
-	sockets := make(map[uuid.UUID]Ch)
+	sockets := make(map[string]map[uuid.UUID]Ch)
 
 	for {
 		select {
 
 		// Подключение новых пользователей
 		case req := <-clientRequests:
-			if rooms[req.clientData.CompanyId] == nil {
-				rooms[req.clientData.CompanyId] = make(map[uuid.UUID]Ch)
+			if req.clientData.CompanyId != "" {
+				if rooms[req.clientData.CompanyId] == nil {
+					rooms[req.clientData.CompanyId] = make(map[uuid.UUID]Ch)
+				}
+				rooms[req.clientData.CompanyId][req.clientData.wsUuid] = req.Channels
 			}
-			rooms[req.clientData.CompanyId][req.clientData.wsUuid] = req.Channels
-			sockets[req.clientData.wsUuid] = req.Channels
+			if sockets[req.clientData.SelfId] == nil {
+				sockets[req.clientData.SelfId] = make(map[uuid.UUID]Ch)
+			}
+			sockets[req.clientData.SelfId][req.clientData.wsUuid] = req.Channels
 			fmt.Println("Websocket connected: " + req.clientData.SelfId)
 
 		// Отключение пользователей
 		case clientData := <-clientDisconnects:
 			// Закрываем сокеты
-			close(rooms[clientData.CompanyId][clientData.wsUuid].msgChan)
-			close(rooms[clientData.CompanyId][clientData.wsUuid].noteChan)
+			if rooms[clientData.CompanyId][clientData.wsUuid].msgChan != nil {
+				close(rooms[clientData.CompanyId][clientData.wsUuid].msgChan)
+				close(rooms[clientData.CompanyId][clientData.wsUuid].noteChan)
+			} else {
+				close(sockets[clientData.SelfId][clientData.wsUuid].noteChan)
+			}
 
 			// Удаляем сокеты
 			delete(rooms[clientData.CompanyId], clientData.wsUuid)
-			delete(sockets, clientData.wsUuid)
+			delete(sockets[clientData.SelfId], clientData.wsUuid)
 
 			fmt.Println("Websocket disconnected: " + clientData.SelfId)
 
@@ -189,10 +200,16 @@ func routeEvents() {
 				fmt.Println("JOINED")
 		    case "new_mess":
 				if note.ForCompany != "" {
-					for wsUuid, ch := range rooms[note.ForCompany] {
-						if wsUuid != note.wsUuid {
+					for _, user := range note.Users {
+						for _, ch := range sockets[user] {
 							ch.noteChan <- note.note
 						}
+					}
+				}
+			case "new_event":
+				for _, user := range note.Users {
+					for _, ch := range sockets[user] {
+						ch.noteChan <- note.note
 					}
 				}
 
@@ -336,7 +353,13 @@ func WsChat(ws *websocket.Conn) {
 			    	Type:          "chat_mess",     
 				}
 				messages <- &msg
-				notifications <- &NotifInnerStruct{note:&n, ForCompany: companyId, wsUuid: clientData.wsUuid}
+				fmt.Println("NOTIF", n)
+				notifications <- &NotifInnerStruct{
+					note:       &n,
+					ForCompany: companyId,
+					wsUuid:     clientData.wsUuid,
+					Users:      company.Users,
+				}
 			// case "notification":
 			// 	notifications <- &NotifInnerStruct{note:&n, ForCompany: companyId, wsUuid: clientData.wsUuid}
 			case "closed":
@@ -362,7 +385,7 @@ func WsCommon(ws *websocket.Conn) {
 	// канал оповещений
 	noteChan := make(chan *Notification, 100)
 
-	clientRequests <- &NewClientEvent{clientData, Ch{nil, noteChan}}
+	clientRequests <- &NewClientEvent{clientData, Ch{noteChan: noteChan}}
 	defer func() { clientDisconnects <- &clientData }()
 
 	// отправка оповещений в сокет
@@ -377,11 +400,6 @@ func WsCommon(ws *websocket.Conn) {
 		}
 	}()
 
-	// коллекции из базы
-	mess_c := db.Collection("messages")
-	comp_c := db.Collection("company")
-	unr_c  := db.Collection("unread_message")
-
 	// получение сообщений из сокета
 	L:
 		for {
@@ -389,91 +407,7 @@ func WsCommon(ws *websocket.Conn) {
 			websocket.JSON.Receive(ws, &messData)
 
 			switch mtype := messData.MType; mtype {
-			case "chat_mess":
-				companyId := clientData.CompanyId
-
-				m := Message{
-					FromUser:   clientData.SelfId,
-					Msg:        messData.MText,
-					CompanyId:  companyId,
-					InsertTime: time.Now(),
-				}
-
-				// Запись сообщения в базу
-				res, err := mess_c.InsertOne(context.TODO(), m)
-				FailOnError(err, "Insertion message failed")
-
-				// Получаем ID компании к которой относится сообщение
-				var company BSCompany
-				objID, err := primitive.ObjectIDFromHex(companyId)
-				FailOnError(err, "Creation ObjectID failed")
-
-				err = comp_c.FindOne(
-						context.TODO(),
-						bson.D{{"_id", objID}},
-						options.FindOne(),
-					).Decode(&company)
-				FailOnError(err, "Searching company in mongo failed")
-
-				for _, user := range company.Users {
-					if clientData.SelfId != user {
-						var u UnreadMessage
-						err = comp_c.FindOne(
-							context.TODO(),
-							bson.D{
-								{"to_company", companyId},
-								{"to_user", user},
-							},
-							options.FindOne(),
-						).Decode(&u)
-
-						if err == nil {
-							unread_m := UnreadMessage{
-								MsgID:     res.InsertedID.(primitive.ObjectID).Hex(),
-								ToCompany: companyId,
-								ToUser:    user,
-								Count:     1,
-							}
-							_, err := unr_c.InsertOne(context.TODO(), unread_m)
-							FailOnError(err, "Creation unread message failed")
-
-						} else {
-					        _, err = unr_c.UpdateOne(
-					        	context.TODO(),
-					        	bson.D{
-									{"to_company", companyId},
-									{"to_user", user},
-								},
-								bson.M{"$inc": bson.M{"count": 1}},
-								options.Update().SetUpsert(true),
-							)
-							FailOnError(err, "Updating unread message failed")
-						}
-					}
-				}
-
-				// Отправка сообщений и оповещений в каналы
-				n := Notification{
-					Text:        messData.MText,
-					Type:        "notification",
-					SubType:     "new_mess",
-					UserID:      messData.Sender,
-					// UserLogin:   messData.SenderLogin,
-					CompanyName: messData.CompanyName,
-					FromUser:    messData.SenderLogin,
-				}
-				msg := MessToCompany{
-					FromUser:      clientData.SelfId,
-			        Msg:           messData.MText,
-			        InsertTime:    time.Now(),
-			        CompanyId:     companyId,
-			    	FromUserLogin: clientData.SelfLogin,
-			    	Type:          "chat_mess",     
-				}
-				messages <- &msg
-				notifications <- &NotifInnerStruct{note:&n, ForCompany: companyId, wsUuid: clientData.wsUuid}
-			// case "notification":
-			// 	notifications <- &NotifInnerStruct{note:&n, ForCompany: companyId, wsUuid: clientData.wsUuid}
+		
 			case "closed":
 				fmt.Println("WS closed.")
 				break L
@@ -495,27 +429,46 @@ func main() {
 	_, err := redis_cl.Ping().Result()
 	FailOnError(err, "Redis Client creation failed")
 	
-	pubsub := redis_cl.Subscribe("notifications")
 
-	// Wait for confirmation that subscription is created before publishing anything.
-	_, err = pubsub.Receive()
-	if err != nil {
-		panic(err)
-	}
 
-	redis_ch := pubsub.Channel()
 
 	go func() {
+		pubsub := redis_cl.Subscribe("notifications")
+		// Wait for confirmation that subscription is created before publishing anything.
+		_, err = pubsub.Receive()
+		if err != nil {
+			panic(err)
+		}
+		redis_ch := pubsub.Channel()
 		for msg := range redis_ch {
 			var r_m RedisMess
+			comp_c := db.Collection("company")
 			fmt.Println(msg.Payload)
 			s, _ := strconv.Unquote(string([]byte(msg.Payload)))
 			err := json.Unmarshal([]byte(s), &r_m)
 			FailOnError(err, "Receive message from redis failed")
 
-			fmt.Println("REDIS")
-			fmt.Println(r_m)
-			fmt.Println("REDIS")
+			var company BSCompany
+			objID, err := primitive.ObjectIDFromHex(r_m.CompanyId)
+			FailOnError(err, "Creation ObjectID failed")
+
+			err = comp_c.FindOne(
+					context.TODO(),
+					bson.D{{"_id", objID}},
+					options.FindOne(),
+				).Decode(&company)
+			FailOnError(err, "Searching company in mongo failed")
+
+			n := Notification{
+				Text:        r_m.Payload,
+				Type:        "notification",
+				SubType:     "new_event",
+				// UserID:      messData.Sender,
+				// UserLogin:   messData.SenderLogin,
+				CompanyName: r_m.CompanyName,
+				FromUser:    r_m.UserName,
+			}
+			notifications <- &NotifInnerStruct{note:&n, ForCompany: r_m.CompanyId, Users: company.Users}
 		}
 	}()
 	// ------------END REDIS-------------------

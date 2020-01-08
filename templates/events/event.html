@@ -5,8 +5,10 @@
     <h4>
     Создать ивент.
     </h4>
-    <meta id="company-data" 
-        data-company_id="{{company_id}}"
+    <meta id="my-data" 
+        data-company_id = "{{company_id}}"
+        data-own_login  = "{{own_login}}"
+        data-self_id    = "{{self_id}}"
     >
     <a href="{{ '/comp_event_list?id=%s'%company_id|urlencode }}">
         <input class="btn btn-primary" title="Ивенты ТусЭ" type="button" value="Ивенты ТусЭ">

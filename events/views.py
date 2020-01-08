@@ -13,9 +13,10 @@ class Event(web.View):
     async def get(self):
         session = await get_session(self.request)
         login = session.get('login')
+        self_id = session.get('user')
 
         company_id = self.request.rel_url.query.get('id')
-        data = {'company_id': company_id, 'own_login': login}
+        data = {'company_id': company_id, 'own_login': login, 'self_id': self_id}
         return data
 
     async def post(self,):
@@ -29,11 +30,11 @@ class Event(web.View):
         self_login = session.get('login')
         if await event.create_event(data, self_id):
             data = {}
-            print(company)
             data['company_id'] = str(company['_id'])
             data['company_name'] = company['name']
             data['type'] = 'new_event'
             data['self_login'] = self_login
+            data['payload'] = f'{self_login} создал новый ивент в {company["name"]}.'
             
             await send_notification(self.request.app, data)
             return web.json_response(True)
@@ -57,9 +58,11 @@ class CompEventList(web.View):
         company_id = self.request.rel_url.query.get('id')
         session = await get_session(self.request)
         login = session.get('login')
+        self_id = session.get('user')
+
 
         events = await event.get_events_by_comp(company_id)
-        return {'company_id': company_id, 'events': events, 'own_login': login}
+        return {'company_id': company_id, 'events': events, 'own_login': login, 'self_id': self_id}
 
 
 class CompEvent(web.View):
@@ -74,13 +77,13 @@ class CompEvent(web.View):
         self_id = session.get('user')
 
         event = await event.get_event(event_id)
-        print(event)
         comp = await company.get_company(event['company_id'])
         context = {
             'access': self_id in comp['users'],
             'event': event,
             'own_login': login,
-            'company_name': comp['name'] 
+            'company_name': comp['name'], 
+            'self_id': self_id,
         }
         return context
 

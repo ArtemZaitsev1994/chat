@@ -135,7 +135,7 @@ class Contacts(web.View):
         u = await user.get_user(self_id)
         contacts = await user.get_users(u['contacts'])
         companys = await company.get_companys_by_user(self_id)
-        return {'contacts': contacts, 'own_login': login, 'companys': companys}
+        return {'contacts': contacts, 'own_login': login, 'companys': companys, 'self_id': self_id}
 
     async def put(self):
         """

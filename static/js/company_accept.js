@@ -1,8 +1,8 @@
 $(document).ready(function(){
 
-    var company_id = $('#company-data').data().company_id
-    // var self_id = $('#my-data').data().self_id
-    // var own_login = $('#my-data').data().own_login
+    var company_id = $('#my-data').data().company_id
+    var self_id    = $('#my-data').data().self_id
+    var own_login  = $('#my-data').data().own_login
 
     function showError(error){
         $('#success').html('');

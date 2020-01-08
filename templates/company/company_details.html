@@ -9,8 +9,10 @@
 {% endblock %}
 {% block content %}
 <div class="container" id='messages_box'>
-<meta id="company-data" 
-data-company_id="{{company._id}}"
+<meta id="my-data" 
+    data-company_id = "{{company._id}}"
+    data-own_login  = "{{own_login}}"
+    data-self_id    = "{{self_id}}"
 >
 {% if access %}
 <div><a href="{{ '/company?id=%s'%company._id|urlencode }}">

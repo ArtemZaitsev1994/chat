@@ -20,7 +20,7 @@ class Invite(web.View):
         for i in invites:
             i['login'] = await user.get_login(i['user_id'])
 
-        return {'invites': invites, 'company_id': company_id, 'company_name': company_name}
+        return {'invites': invites, 'company_id': company_id, 'company_name': company_name, 'self_id': self_id}
 
     async def post(self):
         invite = self.request.app['models']['invite']
@@ -69,7 +69,7 @@ class Event(web.View):
         login = session.get('login')
 
         company_id = self.request.rel_url.query.get('id')
-        data.update({'company_id': company_id, 'own_login': login})
+        data.update({'company_id': company_id, 'own_login': login, 'self_id': self_id})
         return data
 
     async def post(self, **kw):
@@ -103,7 +103,7 @@ class CompEventList(web.View):
         login = session.get('login')
 
         events = await event.get_events_by_comp(company_id)
-        return {'company_id': company_id, 'events': events, 'own_login': login}
+        return {'company_id': company_id, 'events': events, 'own_login': login, 'self_id': self_id}
 
 
 class CompEvent(web.View):
@@ -122,7 +122,8 @@ class CompEvent(web.View):
         context = {
             'access': self_id in comp['users'],
             'event': event,
-            'own_login': login
+            'own_login': login,
+            'self_id': self_id
         }
         return context
 

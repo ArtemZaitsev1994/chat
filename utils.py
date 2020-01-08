@@ -71,5 +71,4 @@ async def send_notification(app: Application, data: Dict[list, Any]):
     js_data = json.dumps(data)
     js_data = js_data.encode('utf-8').decode('utf8').replace("'", '"')
     
-
     await app['redis'].publish_json('notifications', js_data)

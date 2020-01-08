@@ -12,5 +12,6 @@ class Search(web.View):
         items = await model.get_all()
         session = await get_session(self.request)
         login = session.get('login')
-        data = {item: True, 'items': items, 'own_login': login}
+        self_id = session.get('self_id')
+        data = {item: True, 'items': items, 'own_login': login, 'self_id': self_id}
         return data

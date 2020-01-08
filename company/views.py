@@ -12,7 +12,7 @@ class MyCompany(web.View):
         self_id = session.get('user')
         company = self.request.app['models']['company']
         my_companys = await company.get_own_companys(self_id)
-        data = {'is_socket': False, 'own_login': login, 'my_companys': my_companys}
+        data = {'is_socket': False, 'own_login': login, 'my_companys': my_companys, 'self_id': self_id}
         return data
 
     async def post(self):
@@ -53,6 +53,7 @@ class AllCompanys(web.View):
             'companys': {x['_id']: x['name'] for x in await company.get_all()},
             'events': await event.get_events_by_companys(companys),
             'own_login': login,
+            'self_id': self_id
         }
         return data
 
@@ -70,7 +71,7 @@ class Company(web.View):
         session = await get_session(self.request)
         self_id = session.get('user')
         login = session.get('login')
-        data = {'own_login': login}
+        data = {'own_login': login, 'self_id': self_id}
 
         company_id = self.request.rel_url.query.get('id')
         data['company'] = await company.get_company(company_id)
@@ -146,6 +147,7 @@ class CompanyDetails(web.View):
 
         data = {
             'own_login': login,
+            'self_id': self_id,
             'company': comp,
             'access': await company.check_access(company_id, self_id)
         }

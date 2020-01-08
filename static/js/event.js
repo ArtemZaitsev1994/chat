@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-    var company_id = $('#company-data').data().company_id
+    var company_id = $('#my-data').data().company_id
 
     function showError(error){
         $('#success').html('');
