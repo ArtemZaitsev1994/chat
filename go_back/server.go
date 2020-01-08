@@ -147,8 +147,15 @@ var (
 	redis_cl *redis.Client
 )
 
+const (
+	NOTIFICATION = "notification"
+	NEW_EVENT    = "new_event"
+	NEW_MESS     = "new_mess"
+	JOINED       = "joined"
+	CLOSED       = "closed"
+)
+
 func routeEvents() {
-	// clients := make(map[string]chan *Msg)
 
 	// содержит комнаты(компании) с вебсокетами пользователей
 	rooms   := make(map[string]map[uuid.UUID]Ch)
@@ -196,9 +203,9 @@ func routeEvents() {
 
 		case note := <-notifications:
 			switch t := note.note.SubType; t {
-			case "joined":
+			case JOINED:
 				fmt.Println("JOINED")
-		    case "new_mess":
+		    case NEW_MESS:
 				if note.ForCompany != "" {
 					for _, user := range note.Users {
 						for _, ch := range sockets[user] {
@@ -206,7 +213,7 @@ func routeEvents() {
 						}
 					}
 				}
-			case "new_event":
+			case NEW_EVENT:
 				for _, user := range note.Users {
 					for _, ch := range sockets[user] {
 						ch.noteChan <- note.note
@@ -271,7 +278,7 @@ func WsChat(ws *websocket.Conn) {
 			websocket.JSON.Receive(ws, &messData)
 
 			switch mtype := messData.MType; mtype {
-			case "chat_mess":
+			case NEW_MESS:
 				companyId := clientData.CompanyId
 
 				m := Message{
@@ -337,8 +344,8 @@ func WsChat(ws *websocket.Conn) {
 				// Отправка сообщений и оповещений в каналы
 				n := Notification{
 					Text:        messData.MText,
-					Type:        "notification",
-					SubType:     "new_mess",
+					Type:        NOTIFICATION,
+					SubType:     NEW_MESS,
 					UserID:      messData.Sender,
 					// UserLogin:   messData.SenderLogin,
 					CompanyName: messData.CompanyName,
@@ -350,10 +357,9 @@ func WsChat(ws *websocket.Conn) {
 			        InsertTime:    time.Now(),
 			        CompanyId:     companyId,
 			    	FromUserLogin: clientData.SelfLogin,
-			    	Type:          "chat_mess",     
+			    	Type:          NOTIFICATION,     
 				}
-				messages <- &msg
-				fmt.Println("NOTIF", n)
+				messages      <- &msg
 				notifications <- &NotifInnerStruct{
 					note:       &n,
 					ForCompany: companyId,
@@ -362,7 +368,7 @@ func WsChat(ws *websocket.Conn) {
 				}
 			// case "notification":
 			// 	notifications <- &NotifInnerStruct{note:&n, ForCompany: companyId, wsUuid: clientData.wsUuid}
-			case "closed":
+			case CLOSED:
 				fmt.Println("WS closed.")
 				break L
 			default:
@@ -391,9 +397,6 @@ func WsCommon(ws *websocket.Conn) {
 	// отправка оповещений в сокет
 	go func() {
 		for msg := range noteChan {
-			fmt.Println("asdas")
-			fmt.Println(msg)
-			fmt.Println("asdas")
 			bytes, err := json.Marshal(msg)
 			FailOnError(err, "Cant serialize message.")
 			ws.Write(bytes)
@@ -428,9 +431,6 @@ func main() {
 
 	_, err := redis_cl.Ping().Result()
 	FailOnError(err, "Redis Client creation failed")
-	
-
-
 
 	go func() {
 		pubsub := redis_cl.Subscribe("notifications")
@@ -461,8 +461,8 @@ func main() {
 
 			n := Notification{
 				Text:        r_m.Payload,
-				Type:        "notification",
-				SubType:     "new_event",
+				Type:        NOTIFICATION,
+				SubType:     NEW_EVENT,
 				// UserID:      messData.Sender,
 				// UserLogin:   messData.SenderLogin,
 				CompanyName: r_m.CompanyName,
