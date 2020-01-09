@@ -14,6 +14,8 @@ async def authorize(request, handler):
 
     session = await get_session(request)
     if session.get('user'):
+        if request.method == "GET":
+            request['data'] = await get_common_data(session)
         return await handler(request)
     elif check_path(request.path):
         url = request.app.router['login'].url_for()
@@ -21,3 +23,12 @@ async def authorize(request, handler):
         return handler(request)
     else:
         return await handler(request)
+
+
+async def get_common_data(session):
+    data = {
+        'own_login': session.get('login'),
+        'self_id': session.get('user')
+    }
+    return data
+

@@ -9,22 +9,17 @@ from auth.models import User
 
 class About(web.View):
     @aiohttp_jinja2.template('about/about.html')
-    async def get(self, data):
+    async def get(self):
+        data = self.request['data']
         PHOTO_PATH = 'photo/main.gif'
 
-        session = await get_session(self.request)
-        self_id = session.get('user')
-        login = session.get('login')
         user = self.request.app['models']['user']
         users = await user.get_all_users()
 
-        context = {
-            'users': users,
-            'own_login': login,
-            'photo_path': PHOTO_PATH,
-            'self_id': self_id
-        }
-        return context
+        data['users'] = users
+        data['photo_path'] = PHOTO_PATH,
+        
+        return data
 
     async def post(self):
         data = await self.request.json()
@@ -44,7 +39,8 @@ class About(web.View):
         return web.json_response(True)
 
 
-async def drop_all(request):
+async def drop_all(request, data):
+    data = self.request['data']
 
     models = {
         'user': request.app['models']['user'],

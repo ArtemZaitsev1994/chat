@@ -123,7 +123,7 @@ type (
 	RedisMess struct {
 		CompanyId   string `json:"company_id"`
 		CompanyName string `json:"company_name"`
-		Type        string `json:"type"`
+		// Type        string `json:"type"`
 		UserName    string `json:"self_login"`
 		Payload     string `json:"payload"`
 	}
@@ -148,12 +148,59 @@ var (
 )
 
 const (
-	NOTIFICATION = "notification"
-	NEW_EVENT    = "new_event"
-	NEW_MESS     = "new_mess"
-	JOINED       = "joined"
-	CLOSED       = "closed"
+	NEW_USER_IN_COMPANY = "new_user_in_company"
+	NEW_EVENT           = "new_event"
+	NEW_MESS            = "new_mess"
+	JOINED              = "joined"
+	CLOSED              = "closed"
+
+	NOTIFICATION         = "notification"
+	COMPANY_CHANNEL_NAME = "company"
+	EVENT_CHANNEL_NAME   = "events"
 )
+
+
+func holdNotifications(redis_cl *redis.Client, ch_name string, mess_type string) {
+	pubsub := redis_cl.Subscribe(ch_name)
+	// Wait for confirmation that subscription is created before publishing anything.
+	_, err := pubsub.Receive()
+	if err != nil {
+		panic(err)
+	}
+	redis_ch := pubsub.Channel()
+	for msg := range redis_ch {
+		var r_m RedisMess
+		comp_c := db.Collection("company")
+		// избавляемся от слешей
+		s, _ := strconv.Unquote(string([]byte(msg.Payload)))
+		err := json.Unmarshal([]byte(s), &r_m)
+		FailOnError(err, "Receive message from redis failed")
+
+		var company BSCompany
+		objID, err := primitive.ObjectIDFromHex(r_m.CompanyId)
+		FailOnError(err, "Creation ObjectID failed")
+
+		// получаем компанию к которой будет относиться оповещение
+		err = comp_c.FindOne(
+				context.TODO(),
+				bson.D{{"_id", objID}},
+				options.FindOne(),
+			).Decode(&company)
+		FailOnError(err, "Searching company in mongo failed")
+
+		n := Notification{
+			Text:        r_m.Payload,
+			Type:        NOTIFICATION,
+			SubType:     mess_type,
+			// UserID:      messData.Sender,
+			// UserLogin:   messData.SenderLogin,
+			CompanyName: r_m.CompanyName,
+			FromUser:    r_m.UserName,
+		}
+		fmt.Println(n)
+		notifications <- &NotifInnerStruct{note:&n, ForCompany: r_m.CompanyId, Users: company.Users}
+	}
+}
 
 func routeEvents() {
 
@@ -219,7 +266,12 @@ func routeEvents() {
 						ch.noteChan <- note.note
 					}
 				}
-
+			case NEW_USER_IN_COMPANY:
+				for _, user := range note.Users {
+					for _, ch := range sockets[user] {
+						ch.noteChan <- note.note
+					}
+				}
 			}
 			// sockets[note.clientData.wsUuid].noteChan <- note
 		}
@@ -432,45 +484,9 @@ func main() {
 	_, err := redis_cl.Ping().Result()
 	FailOnError(err, "Redis Client creation failed")
 
-	go func() {
-		pubsub := redis_cl.Subscribe("notifications")
-		// Wait for confirmation that subscription is created before publishing anything.
-		_, err = pubsub.Receive()
-		if err != nil {
-			panic(err)
-		}
-		redis_ch := pubsub.Channel()
-		for msg := range redis_ch {
-			var r_m RedisMess
-			comp_c := db.Collection("company")
-			fmt.Println(msg.Payload)
-			s, _ := strconv.Unquote(string([]byte(msg.Payload)))
-			err := json.Unmarshal([]byte(s), &r_m)
-			FailOnError(err, "Receive message from redis failed")
-
-			var company BSCompany
-			objID, err := primitive.ObjectIDFromHex(r_m.CompanyId)
-			FailOnError(err, "Creation ObjectID failed")
-
-			err = comp_c.FindOne(
-					context.TODO(),
-					bson.D{{"_id", objID}},
-					options.FindOne(),
-				).Decode(&company)
-			FailOnError(err, "Searching company in mongo failed")
-
-			n := Notification{
-				Text:        r_m.Payload,
-				Type:        NOTIFICATION,
-				SubType:     NEW_EVENT,
-				// UserID:      messData.Sender,
-				// UserLogin:   messData.SenderLogin,
-				CompanyName: r_m.CompanyName,
-				FromUser:    r_m.UserName,
-			}
-			notifications <- &NotifInnerStruct{note:&n, ForCompany: r_m.CompanyId, Users: company.Users}
-		}
-	}()
+	// слушаем каналы с оповещениями
+	go holdNotifications(redis_cl, EVENT_CHANNEL_NAME, NEW_EVENT)
+	go holdNotifications(redis_cl, COMPANY_CHANNEL_NAME, NEW_USER_IN_COMPANY)
 	// ------------END REDIS-------------------
 
 	// -----------MONGO----------------
@@ -493,24 +509,6 @@ func main() {
 	db = mon_client.Database("chat")
 
 	fmt.Println("Connected to MongoDB!")
-	// collection := mon_client.Database("chat").Collection("messages")
-
-	// cur, err := collection.Find(context.TODO(), filter, options)
-	// FailOnError(err, "Creation cursor failed")
-
-	// for cur.Next(context.TODO()) {
-
-	//     // create a value into which the single document can be decoded
-	//     var elem map[string]interface{}
-	//     err := cur.Decode(&elem)
-	// 	FailOnError(err, "Creation cursor failed")
-
-	//     fmt.Println(elem)
-	// }
-	// FailOnError(err, "Creation cursor failed")
-
-	// Close the cursor once finished
-	// defer cur.Close(context.TODO())
 
 	// -----------MONGOEND----------------
 
@@ -519,10 +517,6 @@ func main() {
 
 	router.Handle("/go/ws_chat", websocket.Handler(WsChat))
 	router.Handle("/go/ws_common", websocket.Handler(WsCommon))
-	router.HandleFunc("/ping/", func (w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello Maksim!")
-	})
-
 	http.Handle("/", router)
 
 	http.ListenAndServe("localhost:8081", nil)

@@ -18,6 +18,7 @@ class PrivateChat(web.View):
     @aiohttp_jinja2.template('chat/private_chat.html')
     async def get(self):
         """Информация о приватном чате"""
+        data = self.request['data']
         user = self.request.app['models']['user']
 
         session = await get_session(self.request)
@@ -41,17 +42,16 @@ class ChatList(web.View):
     @aiohttp_jinja2.template('chat/index.html')
     async def get(self):
         """Получение информации о чате внутри одной тусовки"""
+        data = self.request['data']
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
         # await unread.clear_db()
         # await message.clear_db()
-        print(await unread.collection.find().to_list(length=None))
+        # print(await unread.collection.find().to_list(length=None))
         company = self.request.app['models']['company']
         user = self.request.app['models']['user']
 
-        session = await get_session(self.request)
-        self_id = session.get('user')
-        login = session.get('login')
+        self_id = data['self_id']
 
         company_id = self.request.rel_url.query.get('company_id')
         comp = await company.get_company(company_id)
@@ -75,8 +75,6 @@ class ChatList(web.View):
         online = [x for x in self.request.app['online']]
         online.append(self_id)
         context = {
-            'self_id': self_id,
-            'own_login': login,
             'messages': messages,
             'users': users,
             'online': '#'.join(online),
@@ -85,7 +83,8 @@ class ChatList(web.View):
             'last_mess_author': last_mess_author,
             'company': comp['name'],
         }
-        return context
+        data.update(context)
+        return data
 
 
 async def update_unread_company(request):
@@ -110,7 +109,7 @@ async def update_unread(request):
     data = await request.json()
     session = await get_session(request)
     self_id = session.get('user')
-    # TODO: переделать через REDIS
+    # TODO:
     try:
         await request.app['online'][data['from_user']][1].send_json({'type': 'read', 'user_id': self_id})
     except KeyError:
@@ -126,16 +125,16 @@ class Contacts(web.View):
         """
         Контакты, с которыми есть чат или добавлены в контакты
         """
+        data = self.request['data']
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
 
-        session = await get_session(self.request)
-        self_id = session.get('user')
-        login = session.get('login')
+        self_id = data['self_id']
         u = await user.get_user(self_id)
         contacts = await user.get_users(u['contacts'])
         companys = await company.get_companys_by_user(self_id)
-        return {'contacts': contacts, 'own_login': login, 'companys': companys, 'self_id': self_id}
+        data.update({'contacts': contacts, 'companys': companys})
+        return data
 
     async def put(self):
         """
@@ -280,7 +279,7 @@ class CompanyWebSocket(web.View):
         await ws.close()
         return ws
 
-    async def recieve_private_chat_mess(self, data):
+    async def recieve_private_chat_mess(self):
         result = await self.message.save(
                 chat_name=data['chat_name'],
                 from_user=self.self_id,
@@ -317,7 +316,7 @@ class CompanyWebSocket(web.View):
             finally:
                 await self.request.app['online'][self.self_id].send_json(mess)
 
-    async def recieve_company_chat_mess(self, data):
+    async def recieve_company_chat_mess(self):
 
         comp = await self.company.get_company(data['company_id'])
 

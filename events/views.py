@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Dict, Any
 
 import aiohttp_jinja2
 from aiohttp import web
@@ -8,15 +9,13 @@ from utils import send_notification
 
 
 class Event(web.View):
+    CHANNEL_NAME = 'events'
 
     @aiohttp_jinja2.template('events/event.html')
     async def get(self):
-        session = await get_session(self.request)
-        login = session.get('login')
-        self_id = session.get('user')
-
+        data = self.request['data']
         company_id = self.request.rel_url.query.get('id')
-        data = {'company_id': company_id, 'own_login': login, 'self_id': self_id}
+        data['company_id'] = company_id
         return data
 
     async def post(self,):
@@ -36,7 +35,7 @@ class Event(web.View):
             data['self_login'] = self_login
             data['payload'] = f'{self_login} создал новый ивент в {company["name"]}.'
             
-            await send_notification(self.request.app, data)
+            await send_notification(self.request.app, data, self.CHANNEL_NAME)
             return web.json_response(True)
         return web.json_response({'error': 'Ивент с таким именем уже есть.'})
     
@@ -54,38 +53,36 @@ class CompEventList(web.View):
 
     @aiohttp_jinja2.template('events/comp_event_list.html')
     async def get(self):
+        data = self.request['data']
         event = self.request.app['models']['event']
         company_id = self.request.rel_url.query.get('id')
-        session = await get_session(self.request)
-        login = session.get('login')
-        self_id = session.get('user')
-
+        data['company_id'] = company_id
 
         events = await event.get_events_by_comp(company_id)
-        return {'company_id': company_id, 'events': events, 'own_login': login, 'self_id': self_id}
+        data['events'] = events
+        return data
 
 
 class CompEvent(web.View):
 
     @aiohttp_jinja2.template('events/comp_event.html')
     async def get(self):
+        data = self.request['data']
         company = self.request.app['models']['company']
         event = self.request.app['models']['event']
         event_id = self.request.rel_url.query.get('id')
-        session = await get_session(self.request)
-        login = session.get('login')
-        self_id = session.get('user')
+        self_id = data['self_id']
 
         event = await event.get_event(event_id)
         comp = await company.get_company(event['company_id'])
         context = {
             'access': self_id in comp['users'],
             'event': event,
-            'own_login': login,
-            'company_name': comp['name'], 
-            'self_id': self_id,
+            'company_name': comp['name'],
         }
-        return context
+
+        data.update(context)
+        return data
 
 
 class Photo(web.View):

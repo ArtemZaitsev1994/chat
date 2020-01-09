@@ -10,6 +10,7 @@ class Invite(web.View):
 
     @aiohttp_jinja2.template('invite/invite_list.html')
     async def get(self):
+        data = self.request['data']
         invite = self.request.app['models']['invite']
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
@@ -20,7 +21,8 @@ class Invite(web.View):
         for i in invites:
             i['login'] = await user.get_login(i['user_id'])
 
-        return {'invites': invites, 'company_id': company_id, 'company_name': company_name, 'self_id': self_id}
+        data.update({'invites': invites, 'company_id': company_id, 'company_name': company_name})
+        return data 
 
     async def post(self):
         invite = self.request.app['models']['invite']
@@ -63,13 +65,11 @@ class Event(web.View):
 
     @aiohttp_jinja2.template('events/event.html')
     async def get(self):
+        data = self.request['data']
         event = self.request.app['models']['event']
-        data = {'is_socket': False}
-        session = await get_session(self.request)
-        login = session.get('login')
 
         company_id = self.request.rel_url.query.get('id')
-        data.update({'company_id': company_id, 'own_login': login, 'self_id': self_id})
+        data['company_id'] = company_id
         return data
 
     async def post(self, **kw):
@@ -97,19 +97,20 @@ class CompEventList(web.View):
 
     @aiohttp_jinja2.template('events/comp_event_list.html')
     async def get(self):
+        data = self.request['data']
         event = self.request.app['models']['event']
         company_id = self.request.rel_url.query.get('id')
-        session = await get_session(self.request)
-        login = session.get('login')
 
         events = await event.get_events_by_comp(company_id)
-        return {'company_id': company_id, 'events': events, 'own_login': login, 'self_id': self_id}
+        data.update({'company_id': company_id, 'events': events})
+        return data
 
 
 class CompEvent(web.View):
 
     @aiohttp_jinja2.template('events/comp_event.html')
     async def get(self):
+        data = self.request['data']
         company = self.request.app['models']['company']
         event = self.request.app['models']['event']
         event_id = self.request.rel_url.query.get('id')

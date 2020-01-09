@@ -4,6 +4,7 @@ $(document).ready(function(){
     var self_id    = $('#my-data').data().self_id
     var own_login  = $('#my-data').data().own_login
 
+    console.log(company_id)
     function showError(error){
         $('#success').html('');
         $('#error').html(error);
@@ -42,6 +43,7 @@ $(document).ready(function(){
         data = {
             'company_id': company_id
         }
+        console.log(data)
         $.ajax({
             dataType: 'json',
             url: '/my_companys',

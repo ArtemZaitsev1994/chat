@@ -65,9 +65,8 @@ class AccountDetails(web.View):
     @aiohttp_jinja2.template('auth/account.html')
     async def get(self):
         """Страница проосмотра данных о пользователе"""
-        session = await get_session(self.request)
-        self_id = session.get('user')
-        login = session.get('login')
+        data = self.request['data']
+        self_id = data['self_id']
 
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
@@ -87,14 +86,13 @@ class AccountDetails(web.View):
         context_data = {
             'user': account,
             'in_contacts': self_id in account['contacts'],
-            'own_login': login,
             'is_socket': True,
-            'self_id': self_id,
             'access': access,
             'own_companys': own_user_company,
             'companys': users_company,
         }
-        return context_data
+        data.update(context_data)
+        return data
 
     async def post(self):
         """Обновление данных пользователя"""

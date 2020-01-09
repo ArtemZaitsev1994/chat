@@ -32,6 +32,8 @@ $(document).ready(function(){
                     $('#notifications').text(`Новое сообщение в чате ${messageObj.company} от ${messageObj.from} "${text}"`)
                 } else if (messageObj.subtype == 'new_event') {
                     $('#notifications').text(messageObj.text)
+                } else if (messageObj.subtype == 'new_user_in_company') {
+                    $('#notifications').text(messageObj.text)
                 }
                 console.log(`Notification - message: ${messageObj.msg}\nfrom: ${messageObj.from}`)
             }
