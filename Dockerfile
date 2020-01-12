@@ -8,7 +8,12 @@ WORKDIR /app
 ADD . /app
 
 # Install any needed packages
-RUN pip install -r requirements.txt
+RUN cd /app && pip install -r requirements.txt
+
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.6.0/wait /wait
+RUN chmod +x /wait && chmod +x ./start.sh
+
+CMD ./start.sh
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080

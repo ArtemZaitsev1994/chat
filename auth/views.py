@@ -72,6 +72,7 @@ class AccountDetails(web.View):
         company = self.request.app['models']['company']
 
         user_id = self.request.rel_url.query.get('id')
+        print(user_id)
         if user_id:
             account = await user.get_user(user_id)
             access = user_id == self_id

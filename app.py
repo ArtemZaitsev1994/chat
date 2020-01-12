@@ -49,11 +49,11 @@ app['avatar_dir'] = AVATAR_DIR
 app.on_startup.extend([
     create_models,
     create_redis,
-    start_background_tasks
+    # start_background_tasks
 ])
 
 app.on_cleanup.append([
-    cleanup_background_tasks,
+    # cleanup_background_tasks,
     close_redis,
 ])
 

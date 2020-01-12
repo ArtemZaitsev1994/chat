@@ -25,17 +25,17 @@ async def create_models(app: Application):
 
 
 async def create_redis(app: Application):
-    app['redis'] = await aioredis.create_redis(('localhost', 6379))
+    # app['redis'] = await aioredis.create_redis(('localhost', 6379))
+    app['redis'] = await aioredis.create_redis(('redis', 6379))
     app['redis'].decode_response = True
-    # app['redis'] = await aioredis.create_redis(('redis', 6379))
 
 async def close_redis(app: Application):
     app['redis'].close()
     await app['redis'].wait_closed()
     
 async def make_redis_pool():
-    redis_address = ('127.0.0.1', '6379')
-    # redis_address = ('redis', '6379')
+    # redis_address = ('127.0.0.1', '6379')
+    redis_address = ('redis', '6379')
     return await aioredis.create_pool(
         redis_address,
         create_connection_timeout=1,
