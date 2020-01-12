@@ -39,9 +39,11 @@ class SignIn(web.View):
     async def post(self):
         """Обработка регистрации пользователя"""
         data = await self.request.post()
+        n = self.request.app['models']['notif']
         user = User(self.request.app.db, data)
         result = await user.create_user()
         if isinstance(result, ObjectId):
+            await self.request.app['models']['notif'].user_create_notif(str(result), user.login)
             session = await get_session(self.request)
             set_session(session, str(result), user.login, self.request)
         else:

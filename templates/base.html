@@ -64,7 +64,9 @@
       <a class="nav-link" href="{{ '/signout'|urlencode }}">Выйти</a>
     </div>
   </nav>
-  <div>Последние оповещения: <span id="notifications" style="color: #541082">asdf</span></div>
+  {% if self_id %}
+    <div>Последние оповещения: <span id="notifications" style="color: #541082">{{last_notif.text}}</span></div>
+  {% endif %}
   {% block head %}
   {% endblock %}
 </head>

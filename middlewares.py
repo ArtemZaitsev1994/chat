@@ -18,7 +18,7 @@ async def authorize(request, handler):
     session = await get_session(request)
     if session.get('user'):
         if request.method == "GET":
-            request['data'] = await get_common_data(session)
+            request['data'] = await get_common_data(session, request)
         return await handler(request)
     else:
         if not check_path(request.path):
@@ -27,10 +27,14 @@ async def authorize(request, handler):
         return await handler(request)
 
 
-async def get_common_data(session):
+async def get_common_data(session, request):
+    self_id = session.get('user')
+    last_notif = await request.app['models']['notif'].get_last_notification(self_id)
+
     data = {
         'own_login': session.get('login'),
-        'self_id': session.get('user')
+        'self_id': self_id,
+        'last_notif': last_notif,
     }
     return data
 

@@ -10,6 +10,7 @@ from chat.models import UnreadMessage, Message
 from company.models import Company
 from events.models import Event, Photo
 from invite.models import Invite
+from features.models import Notification
 
 
 async def create_models(app: Application):
@@ -21,6 +22,7 @@ async def create_models(app: Application):
         'event': Event(app.db),
         'photo': Photo(app.db),
         'user': User(app.db, {}),
+        'notif': Notification(app.db)
     })
 
 

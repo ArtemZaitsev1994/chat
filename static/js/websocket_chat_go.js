@@ -7,7 +7,7 @@ $(document).ready(function(){
     // var to_user_login = $('#my-data').data().to_user_login
     var own_login        = $('#my-data').data().own_login
     var self_id          = $('#my-data').data().self_id
-    var online_id        = $('#my-data').data().online_id.split('#')
+    // var online_id        = $('#my-data').data().online_id.split('#')
     var last_mess_author = $('#my-data').data().last_mess_author
     var company_id       = $('#my-data').data().company_id
 

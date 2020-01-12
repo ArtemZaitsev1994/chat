@@ -1,6 +1,6 @@
 from datetime import datetime
 from bson.objectid import ObjectId
-from settings import EVENT_COLLECTION
+from settings import EVENT_COLLECTION, NOTIFICATIOINS
 
 
 class Event:
@@ -97,3 +97,28 @@ class Photo:
 
     async def clear_db(self):
         await self.collection.drop()
+
+
+class Notification:
+    def __init__(self, db):
+        self.db = db
+        self.collection = self.db[NOTIFICATIOINS]
+
+    async def get_last_notification(self, _id: str):
+        result, *_ = await self.collection.find({'touser': _id}).sort([('$natural', -1)]).to_list(length=1)
+        return result
+
+    async def user_create_notif(self, _id: str, login: str):
+        """Создаие оповещения о регистрации пользователя"""
+        data = {
+            'text': f'Добро пожаловать, {login}.',
+            'type': 'notification',
+            'userid': '',
+            'company': '',
+            'fromuser': login,
+            'companyname': '',
+            'subtype': 'new_user',
+            'touser': _id,
+        }
+        result = await self.collection.insert(data)
+        return result
