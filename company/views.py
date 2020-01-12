@@ -53,6 +53,7 @@ class AllCompanys(web.View):
 
         data['companys'] = {x['_id']: x['name'] for x in await company.get_all()}
         data['events'] = await event.get_events_by_companys(companys)
+        print(data)
         return data
 
 

@@ -54,7 +54,10 @@ class Event:
         return events
 
     async def get_events_by_companys(self, company_list: str, **kw) -> List[Dict[str, Any]]:
-        events = await self.collection.find({'company_id': {'$in': company_list}}).sort([('_id', 1)]).to_list(length=None)
+        events = await self.collection.find(
+                {'company_id': {'$in':[str(x['_id']) for x in company_list]}}
+            ).sort([('_id', 1)]).to_list(length=None)
+        print(events)
         for e in events:
             e['_id'] = str(e['_id'])
         return events

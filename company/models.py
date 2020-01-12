@@ -16,7 +16,8 @@ class Company():
         return await self.collection.find_one({'_id': ObjectId(_id)})
 
     async def get_companys_by_user(self, user_id: str) -> List[Any]:
-        result = await self.collection.find({'users':{'$in': [user_id]}, 'admin_id': {'$ne': user_id}}).to_list(length=None)
+        # result = await self.collection.find({'users':{'$in': [user_id]}, 'admin_id': {'$ne': user_id}}).to_list(length=None)
+        result = await self.collection.find({'users':{'$in': [user_id]}}).to_list(length=None)
         return result
 
     async def get_own_companys(self, user_id: str) -> List[Dict[str, Any]]:
