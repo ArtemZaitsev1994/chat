@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-ТусЭ about
+Тусовка about
 {% endblock %}
 
 {% block head %}
@@ -18,7 +18,7 @@
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
                 <h2><span>Создать ивент</span></h2>
-                <p>Вы можете организовать мероприятие и пригласить всех участников этой ТусЭ</p>
+                <p>Вы можете организовать мероприятие и пригласить всех участников этой Тусовки</p>
             </a>
         </div>
         <div class="col">
@@ -27,7 +27,7 @@
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
                 <h2><span>История</span></h2>
-                <p>Посмотреть фото или видео с вечеринок ТусЭ</p>
+                <p>Посмотреть фото или видео с вечеринок Тусовки</p>
             </a>
         </div>
     </div>
@@ -38,7 +38,7 @@
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
                 <h2><span>Общий чат</span></h2>
-                <p>Общий чат для всех участников ТусЭ</p>
+                <p>Общий чат для всех участников Тусовка</p>
                 <p>Непрочитано: {{unread}}</p>
             </a>
         </div>
@@ -47,8 +47,8 @@
                 <div class="tilt pic">
                     <img src="{{static('img/stories.jpg')}}" />
                 </div>
-                <h2><span>О ТусЭ</span></h2>
-                <p>Здесь можно почитать подробней о ТусЭ, правилах и участниках</p>
+                <h2><span>о Тусовке</span></h2>
+                <p>Здесь можно почитать подробней о Тусовке, правилах и участниках</p>
             </a>
         </div>
     </div>
@@ -64,7 +64,7 @@
             id='delete'
             type="button" 
             class="btn btn-danger btn-sm btn-block">
-            Удалить ТусЭ
+            Удалить Тусовку
         </button>
     </a>
     <a href="{{'/invite?company_id=%s'%company._id|urlencode}}">
@@ -86,7 +86,7 @@
             id='quit'
             type="button" 
             class="btn btn-danger btn-sm btn-block">
-            Выйти из ТусЭ
+            Выйти из Тусовки
         </button>
     </a>
 </div>
@@ -96,7 +96,7 @@
 {% if company.private %}
 <div class="row">
     <div class="col" style="background: #fcba03">
-        <div>Название ТусЭ: {{company.name}}</div>
+        <div>Название Тусовки: {{company.name}}</div>
         <div>Состав: 
             {% for _id, user in users.items() %}
                 <a href="#">
@@ -106,7 +106,7 @@
         </div>
         <div style="display:flex">   
             <div id="error" style="color: red;"></div>
-            <button type='button' id='accept' class='col-3 btn btn-primary btn-sm btn-block'>Вступить в ТусЭ (нужен пароль от админа):</button><input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Password" id="password" required>
+            <button type='button' id='accept' class='col-3 btn btn-primary btn-sm btn-block'>Вступить в Тусовка (нужен пароль от админа):</button><input type="password" class="form-control" pattern="[A-Za-zА-Яа-я0-9]{3,}" placeholder="Password" id="password" required>
         </div>
         <div style="display:flex">
             <button type='button' id='invitation' class='col-3 btn btn-primary btn-sm btn-block'>{{action_btn}}</button>
@@ -128,13 +128,13 @@
 {% else %}
 <div class="row">
     <div class="col-8">
-        <div>Название ТусЭ: {{company.name}}</div>
-        <div>О ТусЭ: {{ company.about }}</div>
+        <div>Название Тусовки: {{company.name}}</div>
+        <div>о Тусовке: {{ company.about }}</div>
         <div>Состав: </div>
         {% for _id, user in users.items() %}
             {{user}}
         {% endfor %}
-        <button type='button' id='accept' class='btn btn-primary btn-sm btn-block'>Вступить в ТусЭ</button>
+        <button type='button' id='accept' class='btn btn-primary btn-sm btn-block'>Вступить в Тусовка</button>
     </div>
     <div class="col">
         <a href="#">
@@ -142,7 +142,7 @@
                 <img src="{{static('img/stories.jpg')}}" />
             </div>
             <h2><span>История</span></h2>
-            <p>Посмотреть фото или видео с вечеринок ТусЭ</p>
+            <p>Посмотреть фото или видео с вечеринок Тусовки</p>
         </a>
     </div>
 </div>

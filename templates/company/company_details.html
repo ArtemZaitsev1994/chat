@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-ТусЭ about
+Тусовка about
 {% endblock %}
 
 {% block head %}
@@ -29,7 +29,7 @@
                 </label>
             </div>
             <div class="form-group">
-                <label>О ТусЭ:
+                <label>о Тусовке:
                     <input type="text" class="form-control" placeholder="About" id="about" value="{{ company.about }}" required>
                 </label>
             </div>
@@ -84,7 +84,7 @@
             <p>Название: {{company.name}}</p>
         </div>
         <div class="form-group">
-            <p>О ТусЭ: {{ company.about }}</p>
+            <p>о Тусовке: {{ company.about }}</p>
         </div>
         <div class="form-group">
             <p>{% if company.private %}Закрытая{%else%}Открытая{%endif%}</p>

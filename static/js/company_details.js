@@ -8,7 +8,7 @@ $(document).ready(function(){
     }
     function showSucces(){
         $('#error').html('');
-        $('#success').html('ТусЭ создана.');
+        $('#success').html('Тусовка создана.');
     }
 
     $('#private').on('change', () => {
@@ -31,7 +31,7 @@ $(document).ready(function(){
             errors += 'Неверный формат имени.<br>'
         }
         if ($.inArray( 'about', invalid_fields) != -1){
-            errors += 'Заполните поле "о ТусЭ".<br>'
+            errors += 'Заполните поле "о Тусовке".<br>'
         }
         if ($('#private').prop('checked')){
             if ($.inArray( 'password', invalid_fields) != -1){

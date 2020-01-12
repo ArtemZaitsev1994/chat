@@ -19,7 +19,7 @@
             <div class="col-8">
 
                 {% if e.avatar == '' %}
-                    <h2>ТусЭ</h2>
+                    <h2>Тусовка</h2>
                 {% else %}
                     <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(e._id, e.avatar)) }}"></div>
                 {% endif %}
@@ -28,7 +28,7 @@
                         <div class="col">Название:{{e.name}}</div>
                         <div class="col">Анонс:{{e.about}}</div>
                         <div class="col">Дата:{{e.date}} {{e.time}}</div>
-                        {% if e.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}
+                        {% if e.private %}<div class="col">Доступ только для членов Тусовки</div>{% endif %}
                     </div>
                 </a>
                 <hr>

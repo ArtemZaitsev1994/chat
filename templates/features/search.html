@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-ТусЭ about
+Тусовка about
 {% endblock %}
 
 {% block head %}
@@ -33,7 +33,7 @@
                             type="button" 
                             class="btn btn-outline-{% if not item.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
                             id="user_{{item.name}}">
-                            {{item.name}} admin:{{item.admin}} | {% if not item.private %}открытая{% else %}закрытая{% endif %} ТусЭ
+                            {{item.name}} admin:{{item.admin}} | {% if not item.private %}открытая{% else %}закрытая{% endif %} Тусовка
                         </button>
                     </a>
                 </div>

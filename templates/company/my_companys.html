@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-ТусЭ about
+Тусовка about
 {% endblock %}
 
 {% block head %}
@@ -27,7 +27,7 @@
                     type="button" 
                     class="btn btn-outline-{% if not comp.private %}primary{% else %}warning{% endif %} btn-sm btn-block btn_chat" 
                     id="user_{{comp.name}}">
-                        {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} ТусЭ
+                        {{comp.name}} admin:{{comp.admin}} | {% if not comp.private %}открытая{% else %}закрытая{% endif %} Тусовка
                     </button>
                 </a>
             </div>
@@ -40,12 +40,12 @@
             <div id="error" style="color: red;"></div>
             <div id="success" style="color: green;"></div>
             <div class="form-group">
-                <label>Введите имя ТусЭ
+                <label>Введите имя Тусовки
                     <input type="text" class="form-control" pattern="[A-Za-zА-Яа-я0-9\s]{3,}" placeholder="Login" id="name" required>
                 </label>
             </div>
             <div class="form-group">
-                <label>О ТусЭ
+                <label>о Тусовке
                     <input type="text" class="form-control" placeholder="About" id="about" required>
                 </label>
             </div>
@@ -65,7 +65,7 @@
                 </label>
             </div>
             <p>
-                <input class="btn btn-primary" id="submit" title="Создать ТусЭ" type="button" value="Создать ТусЭ">
+                <input class="btn btn-primary" id="submit" title="Создать Тусовку" type="button" value="Создать Тусовку">
             </p>
         </form>
     </div>

@@ -25,7 +25,7 @@ class MyCompany(web.View):
         data = await self.request.json()
         if await company.create_company(data, self_id):
             return web.json_response(True)
-        return web.json_response({'error': 'ТусЭ уже есть.'})
+        return web.json_response({'error': 'Тусовка уже есть.'})
 
     async def delete(self):
         session = await get_session(self.request)

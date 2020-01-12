@@ -30,10 +30,10 @@
                 <div class="col">Анонс: {{event.about}}</div>
                 <div class="col">Дата: {{event.date}}</div>
                 <div class="col"> <a href="{{ '/company?id=%s'%event.company_id|urlencode }}">Тусовка: {{company_name}}</a></div>
-                {% if event.private %}<div class="col">Доступ только для членов ТусЭ</div>{% endif %}    
+                {% if event.private %}<div class="col">Доступ только для членов Тусовки</div>{% endif %}    
             </div>
         {% if event.avatar == '' %}
-            <h2>ТусЭ</h2>
+            <h2>Тусовка</h2>
         {% else %}
             <div class="col-2"><img style="width: 360px" src="{{ static('photo/%s/%s'%(event._id, event.avatar)) }}"></div>
         {% endif %}

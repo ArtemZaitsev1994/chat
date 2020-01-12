@@ -8,7 +8,7 @@ $(document).ready(function(){
     }
     function showSucces(){
         $('#error').html('');
-        $('#success').html('ТусЭ создана.');
+        $('#success').html('Тусовка создана.');
     }
 
     $('.accept_inv').on('click', function() {
