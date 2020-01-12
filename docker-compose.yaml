@@ -10,13 +10,8 @@ services:
           WAIT_HOSTS: redis:6379, mongodb:27017
 
       ws_server:
-        # image: golang:1.13.4-alpine3.10
         build: ./go_back/
         container_name: "golang"
-        # volumes:
-        #   - ./go_back:/go/src/backend_chat
-        # working_dir: /go/src/backend_chat
-        # command: ./go_back
         ports:
           - 8081:8081
         environment:
