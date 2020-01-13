@@ -10,7 +10,7 @@ class Invite(web.View):
 
     @aiohttp_jinja2.template('invite/invite_list.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         invite = self.request.app['models']['invite']
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
@@ -65,7 +65,7 @@ class Event(web.View):
 
     @aiohttp_jinja2.template('events/event.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         event = self.request.app['models']['event']
 
         company_id = self.request.rel_url.query.get('id')
@@ -97,7 +97,7 @@ class CompEventList(web.View):
 
     @aiohttp_jinja2.template('events/comp_event_list.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         event = self.request.app['models']['event']
         company_id = self.request.rel_url.query.get('id')
 
@@ -110,7 +110,7 @@ class CompEvent(web.View):
 
     @aiohttp_jinja2.template('events/comp_event.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         company = self.request.app['models']['company']
         event = self.request.app['models']['event']
         event_id = self.request.rel_url.query.get('id')

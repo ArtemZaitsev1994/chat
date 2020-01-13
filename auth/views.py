@@ -67,7 +67,7 @@ class AccountDetails(web.View):
     @aiohttp_jinja2.template('auth/account.html')
     async def get(self):
         """Страница проосмотра данных о пользователе"""
-        data = self.request['data']
+        data = self.request.get('data', {})
         self_id = data['self_id']
 
         user = self.request.app['models']['user']

@@ -10,7 +10,7 @@ from auth.models import User
 class About(web.View):
     @aiohttp_jinja2.template('about/about.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         PHOTO_PATH = 'photo/main.gif'
 
         user = self.request.app['models']['user']
@@ -40,7 +40,7 @@ class About(web.View):
 
 
 async def drop_all(request, data):
-    data = self.request['data']
+    data = self.request.get('data', {})
 
     models = {
         'user': request.app['models']['user'],

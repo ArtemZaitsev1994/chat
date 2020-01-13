@@ -10,7 +10,7 @@ async def authorize(request, handler):
         Проверка разрешен ли путь
         """
         result = False
-        for r in ['/login', '/static/', '/signin', '/signout', '/_debugtoolbat/']:
+        for r in ['/login', '/static/', '/signin', '/signout', '/_debugtoolbat/', '/about']:
             if path.startswith(r):
                 result = True
         return result

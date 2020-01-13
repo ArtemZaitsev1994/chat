@@ -9,7 +9,7 @@ class Search(web.View):
 
     @aiohttp_jinja2.template('features/search.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         item = self.request.rel_url.query.get('item')
         model = self.request.app['models'][item]
         items = await model.get_all()

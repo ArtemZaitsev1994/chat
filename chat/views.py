@@ -18,7 +18,7 @@ class PrivateChat(web.View):
     @aiohttp_jinja2.template('chat/private_chat.html')
     async def get(self):
         """Информация о приватном чате"""
-        data = self.request['data']
+        data = self.request.get('data', {})
         user = self.request.app['models']['user']
 
         session = await get_session(self.request)
@@ -42,7 +42,7 @@ class ChatList(web.View):
     @aiohttp_jinja2.template('chat/index.html')
     async def get(self):
         """Получение информации о чате внутри одной тусовки"""
-        data = self.request['data']
+        data = self.request.get('data', {})
         message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
         # await unread.clear_db()
@@ -125,7 +125,7 @@ class Contacts(web.View):
         """
         Контакты, с которыми есть чат или добавлены в контакты
         """
-        data = self.request['data']
+        data = self.request.get('data', {})
         user = self.request.app['models']['user']
         company = self.request.app['models']['company']
 

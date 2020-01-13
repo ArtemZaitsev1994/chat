@@ -9,7 +9,7 @@ class MyCompany(web.View):
 
     @aiohttp_jinja2.template('company/my_companys.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         session = await get_session(self.request)
         self_id = data['self_id']
         company = self.request.app['models']['company']
@@ -42,7 +42,7 @@ class MyCompany(web.View):
 class AllCompanys(web.View):
     @aiohttp_jinja2.template('company/all_companys.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         session = await get_session(self.request)
         self_id = data['self_id']
 
@@ -63,7 +63,7 @@ class Company(web.View):
 
     @aiohttp_jinja2.template('/company/company.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         company = self.request.app['models']['company']
         unread = self.request.app['models']['unread']
         user = self.request.app['models']['user']
@@ -142,7 +142,7 @@ async def check_access_to_company(request):
 class CompanyDetails(web.View):
     @aiohttp_jinja2.template('/company/company_details.html')
     async def get(self):
-        data = self.request['data']
+        data = self.request.get('data', {})
         company = self.request.app['models']['company']
         user = self.request.app['models']['user']
         session = await get_session(self.request)
