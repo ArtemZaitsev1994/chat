@@ -6,10 +6,10 @@
 Соц. сеть с регистрацией пользователей, которые создают группы (компании) для общения с друзьями. Пользователь создает группу, создает ивент внутри группы и приглашает друзей. Пользователи могут общаться, хранить фотографии и просматривать прошедшие ивенты других людей.
 
 ## Разворот
-> git clone https://github.com/ArtemZaitsev1994/chat.git
-> cd chat
-> sudo docker-compose build
-> sudo docker-compose up
+* `git clone https://github.com/ArtemZaitsev1994/chat.git`
+* `cd chat`
+* `sudo docker-compose build`
+* `sudo docker-compose up`
 
 `sudo docker-compose up --build` местами глючит
 
