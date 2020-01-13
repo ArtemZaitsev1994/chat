@@ -11,6 +11,7 @@ from company.models import Company
 from events.models import Event, Photo
 from invite.models import Invite
 from features.models import Notification
+from settings import REDIS_HOST
 
 
 async def create_models(app: Application):
@@ -27,8 +28,7 @@ async def create_models(app: Application):
 
 
 async def create_redis(app: Application):
-    # app['redis'] = await aioredis.create_redis(('localhost', 6379))
-    app['redis'] = await aioredis.create_redis(('redis', 6379))
+    app['redis'] = await aioredis.create_redis(REDIS_HOST)
     app['redis'].decode_response = True
 
 async def close_redis(app: Application):
@@ -36,8 +36,7 @@ async def close_redis(app: Application):
     await app['redis'].wait_closed()
     
 async def make_redis_pool():
-    # redis_address = ('127.0.0.1', '6379')
-    redis_address = ('redis', '6379')
+    redis_address = REDIS_HOST
     return await aioredis.create_pool(
         redis_address,
         create_connection_timeout=1,

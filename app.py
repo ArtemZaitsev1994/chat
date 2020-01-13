@@ -13,8 +13,8 @@ from motor import motor_asyncio as ma
 
 from middlewares import authorize
 from routes import routes
-from settings import *
-from utils import *
+from utils import create_models, create_redis, close_redis, make_redis_pool
+from settings import SECRET_KEY, MONGO_DB_NAME, MONGO_HOST, PHOTO_DIR, AVATAR_DIR
 
 
 loop = asyncio.get_event_loop()
