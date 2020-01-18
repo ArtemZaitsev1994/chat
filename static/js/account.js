@@ -58,6 +58,14 @@ $(document).ready(function(){
 
     })
 
+    $('#photo').on('change', function(){
+        if ($('#photo').val() != '') {
+            $('#send_photo').css('display', 'block')
+        } else {
+            $('#send_photo').css('display', 'none')
+        }
+    })
+
     $('#submit').click(function(){
         errors = ''
         invalid_fields = []

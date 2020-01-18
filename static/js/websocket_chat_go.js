@@ -2,7 +2,7 @@ $(document).ready(function(){
     var sock = {};
 
     var chat_name        = $('#my-data').data().name
-    var company          = $('#my-data').data().company
+    var company          = $('#chat-data').data().company
     // var to_user = $('#my-data').data().to_user
     // var to_user_login = $('#my-data').data().to_user_login
     var own_login        = $('#my-data').data().own_login
@@ -15,21 +15,23 @@ $(document).ready(function(){
     var type = 'company_chat_mess'
     var msg  = $('#message');
 
-    var unread_counter = $('#chat-data').data().unread_counter
+    // var unread_counter = $('#chat-data').data().unread_counter
     var counter = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
     })
 
-    $('.btn_chat').each(function(){
-        counter[this.id] = this.value
-        if (this.value > 0){
-            $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-info')
-            // $(`#${this.id}`).text(`${this.id.slice(4)} (${this.value})`)
-        } else if ($.inArray(this.id.slice(5), online_id) != -1){
-            console.log($(`#${this.id}`))
-            $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-success')
-        }
-    })
+    var first_time = true
+
+    // $('.btn_chat').each(function(){
+    //     counter[this.id] = this.value
+    //     if (this.value > 0){
+    //         $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-info')
+    //         // $(`#${this.id}`).text(`${this.id.slice(4)} (${this.value})`)
+    //     } else if ($.inArray(this.id.slice(5), online_id) != -1){
+    //         console.log($(`#${this.id}`))
+    //         $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-success')
+    //     }
+    // })
     counter['main'] = $('#main_chat').val()
 
     try{
@@ -64,7 +66,6 @@ $(document).ready(function(){
             htmlText = '[' + date.toLocaleTimeString('en-US', options) + '] ';
 
         try{
-            console.log(message)
             var messageObj = JSON.parse(message);
             // если пришло сообщение с текстом
             if (messageObj.type == 'chat_mess'){
@@ -80,6 +81,7 @@ $(document).ready(function(){
                         $('#main_chat').text(`Общий (${c})`)
                     }
                     messageElem.append($('<p class="unread">').html(htmlText));
+                    scrollDown()
                 // если сообщение из общего чата, но мы в другой комнате
                 } else if (typeof company_id !== 'null') {
                     console.log(2)
@@ -135,12 +137,30 @@ $(document).ready(function(){
             } else if(messageObj.type == 'notification'){
                 text = messageObj.text
                 if (text.length > 50) {
-                    text = text.slice(0, 50) + '...'
+                    text = text.slice(0, 50) + '..."'
                 }
                 if (messageObj.subtype == 'new_mess') {
-                    $('#notifications').text(`Новое сообщение в чате ${messageObj.company} от ${messageObj.from} "${text}"`)
+                    $('#notifications').text(text)
                 }
                 console.log(`Notification - message: ${messageObj.msg}\nfrom: ${messageObj.from}`)
+
+            // Пачки сообщений при инициализации или прогрузке новых
+            } else if(messageObj.type == 'part'){
+                messages = messageObj.messages
+                for (let i = 0;i < messages.length; i++) {
+                    unread = i < messageObj.unr_count ? 'unread' : ''
+                    pattern = `
+                        <p class=${unread}>[${messages[i].InsertTime.split('T')[1].split('.')[0]}] 
+                            <span class="user">${messages[i].UserName}</span>: ${messages[i].Msg}
+                        </p>
+                    `
+                    $("#subscribe").prepend(pattern);
+                }
+
+                if (first_time) {
+                    scrollDown()
+                    first_time = false
+                }
             }
         } catch (e){
             console.log(e)
@@ -161,7 +181,6 @@ $(document).ready(function(){
             'from': self_id,
             'from_login': own_login,
         }
-        console.log(data)
         sock.send(JSON.stringify(data));
         msg.val('').focus();
     }
@@ -219,6 +238,7 @@ $(document).ready(function(){
             'company_id': company_id,
             'self_id': self_id,
             'login': own_login,
+            'chat_name': chat_name,
         }));
         console.log('Connection to server started');
         $("#messages_box").hover(() =>{
@@ -259,7 +279,6 @@ $(document).ready(function(){
             type: 'POST',
             data: JSON.stringify(data),
             success: function(data) {
-                console.log(data)
                 result = ''
                 to_user = user_id
                 chat_name = data['chat_name']
@@ -338,6 +357,11 @@ $(document).ready(function(){
     sock.onerror = function(error){
         showMessage(error);
     };
+
+    function scrollDown() { 
+        var div = $("#subscribe");
+        div.scrollTop(10000);
+    }
 
 
 });

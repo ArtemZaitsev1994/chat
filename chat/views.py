@@ -43,45 +43,47 @@ class ChatList(web.View):
     async def get(self):
         """Получение информации о чате внутри одной тусовки"""
         data = self.request.get('data', {})
-        message = self.request.app['models']['message']
+        # message = self.request.app['models']['message']
         unread = self.request.app['models']['unread']
+        for i in (await unread.collection.find().to_list(length=None)):
+            print(i)
         # await unread.clear_db()
         # await message.clear_db()
         # print(await unread.collection.find().to_list(length=None))
         company = self.request.app['models']['company']
-        user = self.request.app['models']['user']
+        # user = self.request.app['models']['user']
 
         self_id = data['self_id']
 
         company_id = self.request.rel_url.query.get('company_id')
         comp = await company.get_company(company_id)
-        users = await user.get_logins(comp['users'])
-        messages = await message.get_messages_by_company(company_id)
-        last_mess_author = messages[-1]['from_user'] if len(messages) > 0 else ''
-        unr_mess = await unread.find_last_unread(company_id, self_id)
-        unread_counter = collections.defaultdict(int)
-        unread_counter['main_chat'] = 0
-        if unr_mess > 0 and messages[-1]['from_user'] == self_id:
-            for mess in messages[-unr_mess:]:
-                mess['unread'] = True
-        for mess in messages:
-            mess['from_user'] = users[mess['from_user']]
+        # users = await user.get_logins(comp['users'])
+        # messages = await message.get_messages_by_company(company_id)
+        # last_mess_author = messages[-1]['from_user'] if len(messages) > 0 else ''
+        # unr_mess = await unread.find_last_unread(company_id, self_id)
+        # unread_counter = collections.defaultdict(int)
+        # unread_counter['main_chat'] = 0
+        # if unr_mess > 0 and messages[-1]['from_user'] == self_id:
+        #     for mess in messages[-unr_mess:]:
+        #         mess['unread'] = True
+        # for mess in messages:
+        #     mess['from_user'] = users[mess['from_user']]
 
-        await unread.delete_by_company(company_id, self_id)
-        for _ws in self.request.app['websockets'][company_id]:
-            await _ws.send_json({'type': 'read', 'user_id': self_id})
+        # await unread.delete_by_company(company_id, self_id)
+        # for _ws in self.request.app['websockets'][company_id]:
+        #     await _ws.send_json({'type': 'read', 'user_id': self_id})
 
-        users = [{'login': y, '_id': x} for x, y in users.items() if x != self_id]
-        online = [x for x in self.request.app['online']]
-        online.append(self_id)
+        # users = [{'login': y, '_id': x} for x, y in users.items() if x != self_id]
+        # online = [x for x in self.request.app['online']]
+        # online.append(self_id)
         context = {
-            'messages': messages,
-            'users': users,
-            'online': '#'.join(online),
             'company_id': company_id,
-            'unread_counter': unread_counter,
-            'last_mess_author': last_mess_author,
             'company': comp['name'],
+            # 'messages': messages,
+            # 'users': users,
+            # 'online': '#'.join(online),
+            # 'unread_counter': unread_counter,
+            # 'last_mess_author': last_mess_author,
         }
         data.update(context)
         return data

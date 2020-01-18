@@ -9,10 +9,10 @@ Main Chat page
 {% endblock %}
 {% block content %}
 <div class="container" id='messages_box'>
-    <meta id="chat-data" 
+    <!-- <meta id="chat-data" 
         data-unread_counter="{{unread_counter}}"
-    >
-    <meta id="my-data" 
+    > -->
+    <meta id="chat-data" 
         data-name             ="{{chat_name}}"
         data-to_user          ="{{to_user}}"
         data-company_id       ="{{company_id}}"
@@ -31,11 +31,8 @@ Main Chat page
         </div>
     </div>
     <div class="row">
-        <div class="col-2">
-                    <div>
-                        <button type="button" id="main_chat" class="btn btn-outline-{% if unread_counter.main_chat > 0 %}info{% else %}success{% endif %} btn-sm btn-block" value="{{unread_counter['main_chat']}}">Общий {% if unread_counter.main_chat > 0 %}({{unread_counter.main_chat}}){% endif %}</button>
-                    </div>
-            <!-- {% for user in users %}
+        <div class="col-2">            
+        <!-- {% for user in users %}
                 <div>
                     <button 
                         type="button" 
@@ -50,11 +47,7 @@ Main Chat page
         </div>    
         <div class="col-8">
             <div id='subscribe'>
-                {% for mes in messages %}
-                  <p {% if mes.unread %}class="unread"{% endif %}>[{{ mes['time'].strftime('%H:%M:%S') }}] 
-                    <span class="user">{{ mes['from_user'] }}</span>: {{ mes['msg'] }}
-                  </p>
-                {% endfor %}
+                <!-- Здесь будут сообщения -->
             </div>
                 <p>
                     <div class="mb-3">

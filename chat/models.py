@@ -242,6 +242,7 @@ class UnreadMessage():
             company_id: ID компании
             user_id: ID юзера отправителя
         """
+        # TODO криво
         if not await self.collection.find_one({'to_company': company_id, 'count': 0}):
             mess = await self.collection.find({'to_company': company_id}).sort([('count', 1)]).to_list(length=None)
 
