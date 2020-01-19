@@ -134,6 +134,8 @@ $(document).ready(function(){
                 } else if (last_mess_author == self_id) {
                     $('.unread').removeClass('unread')
                 }
+
+            // Обработка оповещений
             } else if(messageObj.type == 'notification'){
                 text = messageObj.text
                 if (text.length > 50) {
@@ -141,25 +143,34 @@ $(document).ready(function(){
                 }
                 if (messageObj.subtype == 'new_mess') {
                     $('#notifications').text(text)
+                } else if (messageObj.subtype == 'new_event') {
+                    $('#notifications').text(text)
+                } else if (messageObj.subtype == 'unread') {
+                    $('.unread').removeClass('unread')
                 }
                 console.log(`Notification - message: ${messageObj.msg}\nfrom: ${messageObj.from}`)
 
             // Пачки сообщений при инициализации или прогрузке новых
             } else if(messageObj.type == 'part'){
                 messages = messageObj.messages
-                for (let i = 0;i < messages.length; i++) {
-                    unread = i < messageObj.unr_count ? 'unread' : ''
-                    pattern = `
-                        <p class=${unread}>[${messages[i].InsertTime.split('T')[1].split('.')[0]}] 
-                            <span class="user">${messages[i].UserName}</span>: ${messages[i].Msg}
-                        </p>
-                    `
-                    $("#subscribe").prepend(pattern);
+                if (messages) {
+                    for (let i = 0;i < messages.length; i++) {
+                        unread = i < messageObj.unr_count ? 'unread' : ''
+                        pattern = `
+                            <p class=${unread}>[${messages[i].InsertTime.split('T')[1].split('.')[0]}] 
+                                <span class="user">${messages[i].UserName}</span>: ${messages[i].Msg}
+                            </p>
+                        `
+                        $("#subscribe").prepend(pattern);
+                    }
                 }
 
                 if (first_time) {
                     scrollDown()
                     first_time = false
+                    if (messages) {
+                        last_mess_author = messages[0].FromUser
+                    }
                 }
             }
         } catch (e){
@@ -185,51 +196,53 @@ $(document).ready(function(){
         msg.val('').focus();
     }
 
-    function updateUnread(){
-        if (counter[`user_${to_user}`] > 0){
-            data = {
-                'from_user': to_user,
-            }
-            setTimeout(function(){
-                $.ajax({
-                    dataType: 'json',
-                    url: '/update',
-                    type: 'POST',
-                    data: JSON.stringify(data),
-                    success: function(data) {
-                        if (data){
-                            $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-success')
-                        } else {
-                            $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-secondary')
-                        }
-                        $(`#user_${to_user}`).text(to_user_login)
-                        counter[`user_${to_user}`] = 0
-                        $('.unread').removeClass('unread')
-                    }
-                });
-            }, 2000)
-        }
-    }
+    // function updateUnread(){
+    //     if (counter[`user_${to_user}`] > 0){
+    //         data = {
+    //             'from_user': to_user,
+    //         }
+    //         setTimeout(function(){
+    //             $.ajax({
+    //                 dataType: 'json',
+    //                 url: '/update',
+    //                 type: 'POST',
+    //                 data: JSON.stringify(data),
+    //                 success: function(data) {
+    //                     if (data){
+    //                         $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-success')
+    //                     } else {
+    //                         $(`#user_${to_user}`).removeClass('btn-info').addClass('btn-secondary')
+    //                     }
+    //                     $(`#user_${to_user}`).text(to_user_login)
+    //                     counter[`user_${to_user}`] = 0
+    //                     $('.unread').removeClass('unread')
+    //                 }
+    //             });
+    //         }, 2000)
+    //     }
+    // }
 
     function updateUnreadInCompany(){
         if (counter['main'] > 0 && company_id && last_mess_author != self_id){
             data = {
                 'company_id': company_id,
+                'self_id': self_id,
             }
-            setTimeout(function(){
-                $.ajax({
-                    dataType: 'json',
-                    url: '/update_unread_company',
-                    type: 'POST',
-                    data: JSON.stringify(data),
-                    success: function(data) {
-                        $(`#main_chat`).removeClass('btn-outline-info').addClass('btn-outline-success')
-                        $(`#main_chat`).text('Общий')
-                        counter['main'] = 0
-                        $('.unread').removeClass('unread')
-                    }
-                });
-            }, 200)
+            sock.send(JSON.stringify(data));
+            // setTimeout(function(){
+            //     $.ajax({
+            //         dataType: 'json',
+            //         url: '/update_unread_company',
+            //         type: 'POST',
+            //         data: JSON.stringify(data),
+            //         success: function(data) {
+            //             $(`#main_chat`).removeClass('btn-outline-info').addClass('btn-outline-success')
+            //             $(`#main_chat`).text('Общий')
+            //             counter['main'] = 0
+            //             $('.unread').removeClass('unread')
+            //         }
+            //     });
+            // }, 200)
         }
     }
 
@@ -267,79 +280,79 @@ $(document).ready(function(){
         window.location.href = "signout";
     });
 
-    $('.btn_chat').click(function(){
-        let user_id = this.id.slice(5)
-        let user_login = this.name
-        data = {
-            'user_id': user_id
-        }
-        $.ajax({
-            dataType: 'json',
-            url: '/user_chat',
-            type: 'POST',
-            data: JSON.stringify(data),
-            success: function(data) {
-                result = ''
-                to_user = user_id
-                chat_name = data['chat_name']
-                to_user_login = user_login
-                messages = data.messages
-                company_id = null
-                last_mess_author = data.last_mess_author
-                for (mess of messages){
-                    cls = mess['unread'] ? 'unread' : ''
-                    let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
-                    result += html_p
-                }
-                $('#subscribe').html(result)
-                $(`#user_${user_id}`).text(user_login)
-                $('#chat_with').text(`Чат с ${user_login}`)
-                counter[`user_${user_id}`] = 0
-                if (data['is_online']){
-                    $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-success')
-                } else {
-                    $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-secondary')
-                }
-                $("#messages_box").hover(() =>{
-                    updateUnread()
-                });
-                type = 'private_chat_mess'
-            }
-        });
-    });
+    // $('.btn_chat').click(function(){
+    //     let user_id = this.id.slice(5)
+    //     let user_login = this.name
+    //     data = {
+    //         'user_id': user_id
+    //     }
+    //     $.ajax({
+    //         dataType: 'json',
+    //         url: '/user_chat',
+    //         type: 'POST',
+    //         data: JSON.stringify(data),
+    //         success: function(data) {
+    //             result = ''
+    //             to_user = user_id
+    //             chat_name = data['chat_name']
+    //             to_user_login = user_login
+    //             messages = data.messages
+    //             company_id = null
+    //             last_mess_author = data.last_mess_author
+    //             for (mess of messages){
+    //                 cls = mess['unread'] ? 'unread' : ''
+    //                 let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
+    //                 result += html_p
+    //             }
+    //             $('#subscribe').html(result)
+    //             $(`#user_${user_id}`).text(user_login)
+    //             $('#chat_with').text(`Чат с ${user_login}`)
+    //             counter[`user_${user_id}`] = 0
+    //             if (data['is_online']){
+    //                 $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-success')
+    //             } else {
+    //                 $(`#user_${user_id}`).removeClass('btn-info').addClass('btn-secondary')
+    //             }
+    //             $("#messages_box").hover(() =>{
+    //                 updateUnread()
+    //             });
+    //             type = 'private_chat_mess'
+    //         }
+    //     });
+    // });
 
-    $('#main_chat').click(function(){
-        data = {
-            'company_id': c_id
-        }
-        $.ajax({
-            dataType: 'json',
-            url: '/user_chat_company',
-            type: 'POST',
-            data: JSON.stringify(data),
-            success: function(data) {
-                result = ''
-                to_user = ''
-                chat_name = ''
-                to_user_login = ''
-                company_id = c_id
+    // $('#main_chat').click(function(){
+    //     data = {
+    //         'company_id': c_id
+    //     }
+    //     $.ajax({
+    //         dataType: 'json',
+    //         url: '/user_chat_company',
+    //         type: 'POST',
+    //         data: JSON.stringify(data),
+    //         success: function(data) {
+    //             result = ''
+    //             to_user = ''
+    //             chat_name = ''
+    //             to_user_login = ''
+    //             company_id = c_id
 
-                messages = data.messages
-                last_mess_author = data.last_mess_author
-                for (mess of messages){
-                    cls = mess['unread'] ? 'unread' : ''
-                    let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
-                    result += html_p
-                }
-                $('#subscribe').html(result)
-                $('#chat_with').text('Общий чат')
-                $("#messages_box").hover(() =>{
-                    updateUnreadInCompany()
-                });
-                type = 'company_chat_mess'
-            }
-        });
-    });
+    //             messages = data.messages
+    //             last_mess_author = data.last_mess_author
+    //             for (mess of messages){
+    //                 cls = mess['unread'] ? 'unread' : ''
+    //                 let html_p = `<p class=${cls}>[${mess['time']}]<span class="user"> ${mess['from_user']}</span>: ${mess['msg']}</p>`
+    //                 result += html_p
+    //             }
+    //             $('#subscribe').html(result)
+    //             $('#chat_with').text('Общий чат')
+    //             $("#messages_box").hover(() =>{
+    //                 updateUnreadInCompany()
+    //             });
+    //             type = 'company_chat_mess'
+    //         }
+    //     });
+    // });
 
     sock.onclose = function(event){
         let data = {

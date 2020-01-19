@@ -44,9 +44,9 @@ class ChatList(web.View):
         """Получение информации о чате внутри одной тусовки"""
         data = self.request.get('data', {})
         # message = self.request.app['models']['message']
-        unread = self.request.app['models']['unread']
-        for i in (await unread.collection.find().to_list(length=None)):
-            print(i)
+        # unread = self.request.app['models']['unread']
+        # for i in (await unread.collection.find().to_list(length=None)):
+        #     print(i)
         # await unread.clear_db()
         # await message.clear_db()
         # print(await unread.collection.find().to_list(length=None))
@@ -102,6 +102,7 @@ async def update_unread_company(request):
     for _ws in request.app['websockets'][data['company_id']]:
         await _ws.send_json({'type': 'read', 'user_id': self_id})
     return web.json_response(True)
+
 
 async def update_unread(request):
     """
