@@ -32,7 +32,6 @@ $(document).ready(function(){
     //         $(`#${this.id}`).removeClass('btn-secondary').addClass('btn-success')
     //     }
     // })
-    counter['main'] = $('#main_chat').val()
 
     try{
         sock = new WebSocket(`ws://localhost:8081/go/ws_chat`);
@@ -223,11 +222,14 @@ $(document).ready(function(){
     // }
 
     function updateUnreadInCompany(){
+
         if (counter['main'] > 0 && company_id && last_mess_author != self_id){
             data = {
                 'company_id': company_id,
-                'self_id': self_id,
+                'from': self_id,
+                'type': 'unread'
             }
+            console.log(data)
             sock.send(JSON.stringify(data));
             // setTimeout(function(){
             //     $.ajax({

@@ -82,6 +82,7 @@ $(document).ready(function(){
             })
         } else {
             data['delete'] = false
+            console.log(data)
             $.post('company_details', JSON.stringify(data), function(data){
                 if (data.error){
                     showError(data.error);

@@ -155,6 +155,7 @@ class CompanyDetails(web.View):
         comp['users'] = await user.get_users(comp['users'])
 
         data['company'] = comp
+        data['company_id'] = company_id
         data['access'] = await company.check_access(company_id, self_id)
 
         return data
