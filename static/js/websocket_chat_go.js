@@ -14,6 +14,7 @@ $(document).ready(function(){
     var c_id = company_id
     var type = 'company_chat_mess'
     var msg  = $('#message');
+    var have_next_mess_part = false
 
     // var unread_counter = $('#chat-data').data().unread_counter
     var counter = new Proxy({}, {
@@ -153,6 +154,7 @@ $(document).ready(function(){
             } else if(messageObj.type == 'part'){
                 messages = messageObj.messages
                 if (messages) {
+                    have_next_mess_part = messages.length == 20 ? true : false 
                     for (let i = 0;i < messages.length; i++) {
                         unread = i < messageObj.unr_count ? 'unread' : ''
                         pattern = `
@@ -162,6 +164,7 @@ $(document).ready(function(){
                         `
                         $("#subscribe").prepend(pattern);
                     }
+                    
                 }
 
                 if (first_time) {
