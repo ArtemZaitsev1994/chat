@@ -14,7 +14,7 @@ $(document).ready(function(){
     var c_id = company_id
     var type = 'company_chat_mess'
     var msg  = $('#message');
-    var have_next_mess_part = false
+    var have_next_mess_part = true
 
     // var unread_counter = $('#chat-data').data().unread_counter
     var counter = new Proxy({}, {
@@ -154,17 +154,24 @@ $(document).ready(function(){
             } else if(messageObj.type == 'part'){
                 messages = messageObj.messages
                 if (messages) {
-                    have_next_mess_part = messages.length == 20 ? true : false 
+                    $('#last_mess').removeAttr("id")
+                    have_next_mess_part = messages.length == 20 ? true : false
                     for (let i = 0;i < messages.length; i++) {
+                        // попадает ли сообщение в непрочитанные
                         unread = i < messageObj.unr_count ? 'unread' : ''
+                        // если сообщение последнее и есть еще сообщения на сервере (предположительно)
+                        avail_old_mess = (i == 19 && have_next_mess_part) ? "last_mess" : ''
+
                         pattern = `
-                            <p class=${unread}>[${messages[i].InsertTime.split('T')[1].split('.')[0]}] 
+                            <p id="${avail_old_mess}" class="${unread} chat_mess">[${messages[i].InsertTime.split('T')[1].split('.')[0]}]
                                 <span class="user">${messages[i].UserName}</span>: ${messages[i].Msg}
                             </p>
                         `
-                        $("#subscribe").prepend(pattern);
                     }
+                    set_upload_old_mess()
                     
+                } else {
+                    have_next_mess_part = false
                 }
 
                 if (first_time) {
@@ -256,7 +263,6 @@ $(document).ready(function(){
             'company_id': company_id,
             'self_id': self_id,
             'login': own_login,
-            'chat_name': chat_name,
         }));
         console.log('Connection to server started');
         $("#messages_box").hover(() =>{
@@ -284,6 +290,28 @@ $(document).ready(function(){
     $('#signout').click(function(){
         window.location.href = "signout";
     });
+
+    function set_upload_old_mess() {
+        var $win = $(window);
+        var $marker = $('#last_mess');
+
+        if ($marker) {
+            //отслеживаем событие прокрутки страницы
+            $win.scroll(function() {
+              if($win.scrollTop() <= $marker.offset().top) {
+                console.log('Viden')
+                sock.send(JSON.stringify({
+                    'company_id': company_id,
+                    'self_id': self_id,
+                    'login': own_login,
+                    'type': 'part',
+                }));
+              }else{
+                console.log('Ne Viden')
+              }
+            });
+        }
+    }
 
     // $('.btn_chat').click(function(){
     //     let user_id = this.id.slice(5)
