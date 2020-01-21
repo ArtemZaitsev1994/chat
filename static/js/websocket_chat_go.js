@@ -67,6 +67,7 @@ $(document).ready(function(){
 
         try{
             var messageObj = JSON.parse(message);
+            console.log(messageObj)
             // если пришло сообщение с текстом
             if (messageObj.type == 'chat_mess'){
                 htmlText = `${htmlText}<span class="user">${messageObj.from}</span>: ${messageObj.msg}\n`;
@@ -111,14 +112,17 @@ $(document).ready(function(){
 
             // ообщение о том, что человек вошел в онлайн
             } else if(messageObj.type == 'joined'){
+                    console.log(5)
                 $(`#user_${messageObj.user_id}`).removeClass('btn-secondary').addClass('btn-success')
 
             // сообщение, что человек вышел из онлайна
             } else if(messageObj.type == 'left'){
+                    console.log(6)
                 $(`#user_${messageObj.user_id}`).removeClass('btn-success').addClass('btn-secondary')
 
             // сообщение, что человек прочел сообщение
             } else if(messageObj.type == 'read'){
+                    console.log(7)
                 if (messageObj.company_id == company_id){
                     counter['main'] = 0
                     $('#main_chat').val(0)
@@ -137,6 +141,9 @@ $(document).ready(function(){
 
             // Обработка оповещений
             } else if(messageObj.type == 'notification'){
+                    console.log(8)
+
+                    console.log(messageObj)
                 text = messageObj.text
                 if (text.length > 50) {
                     text = text.slice(0, 50) + '..."'
@@ -148,10 +155,10 @@ $(document).ready(function(){
                 } else if (messageObj.subtype == 'unread') {
                     $('.unread').removeClass('unread')
                 }
-                console.log(`Notification - message: ${messageObj.msg}\nfrom: ${messageObj.from}`)
 
             // Пачки сообщений при инициализации или прогрузке новых
             } else if(messageObj.type == 'part'){
+                    console.log(9)
                 messages = messageObj.messages
                 if (messages) {
                     $('#last_mess').removeAttr("id")
@@ -160,13 +167,14 @@ $(document).ready(function(){
                         // попадает ли сообщение в непрочитанные
                         unread = i < messageObj.unr_count ? 'unread' : ''
                         // если сообщение последнее и есть еще сообщения на сервере (предположительно)
-                        avail_old_mess = (i == 19 && have_next_mess_part) ? "last_mess" : ''
+                        avail_old_mess = (i == 19 && have_next_mess_part) ? 'id="last_mess"' : ''
 
                         pattern = `
-                            <p id="${avail_old_mess}" class="${unread} chat_mess">[${messages[i].InsertTime.split('T')[1].split('.')[0]}]
+                            <p ${avail_old_mess} class="${unread} chat_mess">[${messages[i].InsertTime.split('T')[1].split('.')[0]}]
                                 <span class="user">${messages[i].UserName}</span>: ${messages[i].Msg}
                             </p>
                         `
+                         $("#subscribe").prepend(pattern);
                     }
                     set_upload_old_mess()
                     
@@ -239,7 +247,6 @@ $(document).ready(function(){
                 'from': self_id,
                 'type': 'unread'
             }
-            console.log(data)
             sock.send(JSON.stringify(data));
             // setTimeout(function(){
             //     $.ajax({
@@ -283,7 +290,6 @@ $(document).ready(function(){
 
     // income message handler
     sock.onmessage = function(event) {
-        console.log("sock.onmessage:\n", event.data)
         showMessage(event.data);
     };
 
@@ -292,7 +298,7 @@ $(document).ready(function(){
     });
 
     function set_upload_old_mess() {
-        var $win = $(window);
+        var $win = $('#subscribe');
         var $marker = $('#last_mess');
 
         if ($marker) {

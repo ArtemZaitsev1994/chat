@@ -13,6 +13,10 @@
 
 `sudo docker-compose up --build` местами глючит
 
+запуск локально
+`python app.py --local 1`
+`go run *.go local`
+
 ## На данном этапе подключен:
 * redis для связи между микросервисами
 * golang для чата и сокетов
