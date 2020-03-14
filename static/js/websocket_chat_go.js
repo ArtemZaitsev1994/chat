@@ -35,10 +35,10 @@ $(document).ready(function(){
     // })
 
     try{
-        sock = new WebSocket(`ws://localhost:8081/go/ws_chat`);
+        sock = new WebSocket(`ws://212.220.216.173:14808/go/ws_chat`);
     }
     catch(err){
-        sock = new WebSocket(`wss://localhost:8081/go/ws_chat`);
+        sock = new WebSocket(`wss://212.220.216.173:14808/go/ws_chat`);
     }
 
     // if (typeof company_id === "undefined"){

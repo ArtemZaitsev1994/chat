@@ -6,10 +6,10 @@ $(document).ready(function(){
     var self_id    = $('#my-data').data().self_id
 
     try{
-        sock = new WebSocket(`ws://localhost:8081/go/ws_common`);
+        sock = new WebSocket(`ws://212.220.216.173:14808/go/ws_common`);
     }
     catch(err){
-        sock = new WebSocket(`wss://localhost:8081/go/ws_common`);
+        sock = new WebSocket(`wss://212.220.216.173:14808/go/ws_common`);
     }
 
     // show message in div#subscribe

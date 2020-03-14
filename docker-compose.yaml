@@ -10,7 +10,7 @@ services:
           WAIT_HOSTS: redis:6379, mongodb:27017
 
       ws_server:
-        build: ./go_back/
+        build: ./microservices/go_back/
         container_name: "golang"
         ports:
           - 8081:8081
