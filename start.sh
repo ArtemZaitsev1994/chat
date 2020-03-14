@@ -1,3 +1,3 @@
 #!/bin/bash
 /wait
-python app.py --local 1
+python app.py

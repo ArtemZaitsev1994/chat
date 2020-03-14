@@ -17,7 +17,7 @@ RUN chmod +x /wait && chmod +x ./go_ws_chat/start.sh
 RUN ls
 RUN pwd
 
-CMD /go/src/go_ws_chat/start.sh --local
+CMD /go/src/go_ws_chat/start.sh
 # CMD ls /go/src/go_ws_chat/
 
 # Make port 8081 available to the world outside this container

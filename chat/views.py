@@ -42,7 +42,7 @@ class ChatList(web.View):
     @aiohttp_jinja2.template('chat/index.html')
     async def get(self):
         """Получение информации о чате внутри одной тусовки"""
-        # data = self.request.get('data', {})
+        data = self.request.get('data', {})
         # message = self.request.app['models']['message']
         # unread = self.request.app['models']['unread']
         # for i in (await unread.collection.find().to_list(length=None)):
